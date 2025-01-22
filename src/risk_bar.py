@@ -41,6 +41,11 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             )
             group_patches.append(bar)
 
+            # Aggiungi i valori all'estremo destro delle barre
+            for j, val in enumerate(values):
+                ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black')
+
+
         # Configura assi e legenda
         ax.set_yticks(y_positions + bar_height * (len(groups) - 1) / 2)
         ax.set_yticklabels(categories)
