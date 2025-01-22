@@ -19,7 +19,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
     try:
         num_categories = len(categories)
-        bar_height = 0.1 / len(groups)
+        bar_height = 0.1 # / len(groups)
         fig, ax = plt.subplots(figsize=(16, 8)) 
 
         # Aggiungi le fasce di rischio come sfondo
