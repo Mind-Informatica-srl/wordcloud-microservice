@@ -98,11 +98,11 @@ def create_risk_bar():
     groups = data.get('groups', [])
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
-    group_labels = data.get('group_labels', [])
     legend_labels = data.get('legend_labels', [])
+    bar_colors = data.get('bar_colors', []) 
 
     try:
-        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, group_labels, legend_labels)
+        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors)
         return send_file(io.BytesIO(image_bytes), mimetype='image/png')
     except Exception as e:
         return jsonify({'error': str(e)}), 500

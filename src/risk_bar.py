@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import io
 import numpy as np
 
-def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, group_labels, legend_labels):
+def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors):
     """
     Crea un grafico a barre orizzontali con fasce di rischio sullo sfondo.
 
@@ -13,13 +13,13 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, g
     :param groups: Lista di stringhe, nomi dei gruppi.
     :param risk_zones: Lista di tuple, ogni tuple rappresenta (inizio, fine) per una fascia di rischio.
     :param risk_colors: Lista di stringhe, colori delle fasce di rischio.
-    :param group_labels: Lista di stringhe, etichette per i gruppi.
     :param legend_labels: Lista di stringhe, etichette della leggenda.
+    :param bar_colors: Lista di stringhe, colori delle barre per i gruppi.
     """
 
     try:
         num_categories = len(categories)
-        bar_height = 0.15
+        bar_height = 0.1 / len(groups)
         fig, ax = plt.subplots(figsize=(16, 8)) 
 
         # Aggiungi le fasce di rischio come sfondo
@@ -30,23 +30,19 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, g
 
         # Definizione delle posizioni per le barre
         y_positions = np.arange(num_categories)
-        offsets = np.linspace(-bar_height * (len(groups) - 1), bar_height * (len(groups) - 1), len(groups))    
-        colors = plt.cm.Greys(np.linspace(0.2, 0.8, len(groups)))
-
         group_patches = []
-        for i, (group, offset) in enumerate(zip(groups, offsets)):
+        for i, group in enumerate(groups):
             bar = ax.barh(
-                y_positions + offset,
-                values[i],
+                y_positions + i * bar_height,
+                [val[i] for val in values],
                 height=bar_height,
-                label=categories[i],
-                alpha=0.8,
-                color=colors[i]
+                label=group,
+                color=bar_colors[i]
             )
             group_patches.append(bar)
 
         # Configura assi e legenda
-        ax.set_yticks(y_positions)
+        ax.set_yticks(y_positions + bar_height * (len(groups) - 1) / 2)
         ax.set_yticklabels(categories)
         # Prima legenda per le fasce di rischio
         risk_legend = ax.legend(
@@ -61,27 +57,27 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, g
         ax.add_artist(risk_legend)
 
         # Seconda legenda per i gruppi
-        # Seconda legenda per i gruppi
         group_legend = ax.legend(
-            handles=[bar for bars in group_patches for bar in bars], 
-            labels=group_labels,  # Usa group_labels per le etichette della legenda
+            handles=[plt.Line2D([0], [0], color=color, lw=4) for color in bar_colors], 
+            labels=groups,  # Usa groups per le etichette della legenda
             loc="center left", 
             bbox_to_anchor=(1, 0.5), 
             frameon=False  # Rimuovi il bordo
         )      
+        ax.add_artist(group_legend)
         ax.grid(axis="x", linestyle="--", alpha=0.5)
 
         # Rimuovi il bordo nero intorno all'area del grafico
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-        # Aggiungi spazio extra sotto il grafico
-        plt.subplots_adjust(bottom=0.2)
+        # Aggiungi spazio extra intorno al grafico
+        plt.subplots_adjust(left=0.1, right=0.8, top=0.9, bottom=0.3)
 
         # Mostra il grafico
         plt.tight_layout()
         byte_io = io.BytesIO()
-        plt.savefig(byte_io, format='PNG')
+        plt.savefig(byte_io, format='PNG', bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight')
         plt.close()
 
         # Restituisce l'immagine come array di byte
@@ -90,18 +86,3 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, g
     except Exception as e:
         print(f"Errore durante la creazione del grafico: {e}")
         return None
-
-# # Esempio di utilizzo
-# categories = ["Identificazione Luxury", "Carico di Lavoro", "Autonomia", "Ambiente", "Relazioni", "Equilibrio Casa-Lavoro"]
-# values = [
-#     [95, 96, 92, 94, 97, 93],  # Valori per Responsabili di Team
-#     [101, 103, 98, 106, 100, 105],  # Valori per Uffici
-#     [107, 110, 103, 102, 108, 101],  # Valori per Magazzino
-# ]
-# groups = ["Responsabili di Team", "Uffici", "Magazzino"]
-# risk_zones = [(0, 80), (80, 95), (95, 105), (105, 120), (120, 160)]
-# risk_colors = ["#4CAF50", "#8BC34A", "#FFEB3B", "#FFC107", "#F44336"]
-# group_labels = ["Responsabili di Team", "Uffici", "Magazzino"]
-# legend_labels = ["Basso <80", "Medio-basso 80-95", "Medio 95-105", "Medio-alto 105-120", "Alto >120"]
-
-# create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, group_labels, legend_labels)
