@@ -1,4 +1,5 @@
 from flask import Flask, request, send_file, jsonify
+from barre_graph import generate_barre_in_pila_stress
 from barre_graph import generate_barre_in_pila
 from dispersione import generate_dispersione
 from overaly_images import overlayimages
@@ -6,6 +7,7 @@ from pie3d_graph import generate_pie3d
 from risk_bar import create_risk_bar_chart
 from risk_line import create_risk_line_chart
 from wordcloud_graph import generate_wordcloud
+from barre_orizzontali import generate_barre_orizzontali
 import io
 from PIL import Image
 
@@ -42,6 +44,20 @@ def overlay_images():
 
     return send_file(img_byte_arr, mimetype='image/png')
 
+@app.route('/generate_barre_in_pila_stress', methods=['POST'])
+def create_barre_in_pila_stress():
+    data = request.json
+    print(data)
+    colors = data.get('colors', [])
+    labels = data.get('labels', [])
+    sizes = data.get('sizes', [])
+
+    try:
+        image_bytes = generate_barre_in_pila_stress(colors, labels, sizes)
+        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 
 @app.route('/generate_barre_in_pila', methods=['POST'])
 def create_barre_in_pila():
@@ -56,6 +72,21 @@ def create_barre_in_pila():
         return send_file(io.BytesIO(image_bytes), mimetype='image/png')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/generate_barre_orizzontali', methods=['POST'])
+def create_barre_orizzontali():
+    data = request.json
+    print(data)
+    colors = data.get('colors', [])
+    labels = data.get('labels', [])
+    sizes = data.get('sizes', [])
+
+    try:
+        image_bytes = generate_barre_orizzontali(colors, labels, sizes)
+        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+   
     
 
 @app.route('/generate_pie3d', methods=['POST'])

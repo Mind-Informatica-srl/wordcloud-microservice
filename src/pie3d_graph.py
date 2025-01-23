@@ -1,7 +1,9 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
 import io
+
 
 def generate_pie3d(colors, labels, sizes, explode, title):
     """
@@ -19,9 +21,8 @@ def generate_pie3d(colors, labels, sizes, explode, title):
     """
 
     # Crea il grafico a torta tridimensionale
-    fig, ax = plt.subplots()
-    ax.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90, pctdistance=0.85)
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+    plt.figure(figsize=(9, 8))
+    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=True)
 
     # Aggiungi il titolo al grafico
     plt.title(title)
