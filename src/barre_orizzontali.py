@@ -17,16 +17,17 @@ def generate_barre_orizzontali(colors, labels, sizes):
     """
 
     # Crea il grafico a barre orizzontali
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(14, 6))  # Imposta la dimensione della figura per render
     y_pos = np.arange(len(labels))
-    ax.barh(y_pos, sizes, color=colors, edgecolor='black')
+    ax.barh(y_pos, sizes, color=colors, edgecolor='black', height=0.2)
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(labels)
+    ax.set_yticklabels(labels, fontsize=10)
 
     # Aggiungi le etichette ai bar
     for i, v in enumerate(sizes):
-        ax.text(v + 0.1, i, str(v) + "%", color='black', va='center')
+        ax.text(v + 0.1, i, f"{v:.2f}%", color='black', va='center')
 
+    plt.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()

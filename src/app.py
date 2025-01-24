@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file, jsonify
 from barre_graph import generate_barre_in_pila_stress
 from barre_graph import generate_barre_in_pila
+from barre_graph import generate_barre_in_pila_serie_s
 from dispersione import generate_dispersione
 from overaly_images import overlayimages
 from pie3d_graph import generate_pie3d
@@ -69,6 +70,19 @@ def create_barre_in_pila():
 
     try:
         image_bytes = generate_barre_in_pila(colors, labels, sizes)
+        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate_barre_in_pila_serie_s', methods=['POST'])
+def create_barre_in_pila_serie_s():
+    data = request.json
+    print(data)
+    colors = data.get('colors', [])
+    sizes = data.get('sizes', [])
+
+    try:
+        image_bytes = generate_barre_in_pila_serie_s(colors, sizes)
         return send_file(io.BytesIO(image_bytes), mimetype='image/png')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
