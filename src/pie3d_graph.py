@@ -21,11 +21,14 @@ def generate_pie3d(colors, labels, sizes, explode, title):
     """
 
     # Crea il grafico a torta tridimensionale
-    plt.figure(figsize=(9, 8))
-    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=True)
+    plt.figure(figsize=(14, 6))
+    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=True, colors=colors, startangle=0)
 
     # Aggiungi il titolo al grafico
     plt.title(title)
+
+    # Adatta il layout del grafico
+    plt.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
