@@ -15,30 +15,35 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     :param legend_labels: Lista di stringhe, etichette della leggenda delle fasce di rischio.
     """
     x_positions = np.arange(len(categories))
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(14, 7))
 
     # Aggiungi le fasce di rischio come sfondo
+    risk_patches = []
     for i, (start, end) in enumerate(risk_zones):
-        ax.axhspan(start, end, color=risk_colors[i], alpha=0.3, label=f"Rischio: {legend_labels[i]}")
+        patch = ax.axhspan(start, end, color=risk_colors[i], label=f"Rischio: {legend_labels[i]}")
+        risk_patches.append(patch)
 
     # Disegna la linea
-    ax.plot(x_positions, values, marker="o", color="black", linewidth=2)
+    ax.plot(x_positions, values, color="black", linewidth=2)
 
     # Aggiungi i valori sopra i punti
     for x, y in zip(x_positions, values):
-        ax.text(x, y + 1, f"{y:.2f}", ha="center", fontsize=10, color="black")
+        ax.text(x, y + 3, f"{y:.2f}", ha="center", fontsize=10, color="black")
 
     # Configura assi e legenda
     ax.set_xticks(x_positions)
     ax.set_xticklabels(categories, rotation=45, ha="right")
     ax.set_ylim(0, max(risk_zones[-1]) + 10)
-    ax.set_ylabel("Valore")
-    ax.set_xlabel("Categorie")
-    ax.legend(loc="upper right")
-    ax.grid(axis="y", linestyle="--", alpha=0.5)
+    # Aggiungi la legenda per le fasce di rischio lateralmente al grafico
+    ax.legend(handles=risk_patches, loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False)
+
+    # Rimuovi il bordo nero intorno all'area del grafico
+    for spine in ax.spines.values():
+        spine.set_visible(False)
 
     # Mostra il grafico
     plt.tight_layout()
+
     byte_io = io.BytesIO()
     plt.savefig(byte_io, format='PNG')
     plt.close()
