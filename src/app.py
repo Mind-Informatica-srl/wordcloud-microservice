@@ -8,6 +8,7 @@ from risk_bar import create_risk_bar_chart
 from risk_line import create_risk_line_chart
 from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
+from distribuzione import create_survey_chart
 import io
 from PIL import Image
 
@@ -85,8 +86,21 @@ def create_barre_orizzontali():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
    
-    
+@app.route('/distribuzione', methods=['POST'])
+def create_distribuzione():
+    data = request.json
+    print(data)
+    survey_data = data.get('data', [])
+    cn = data.get('category_names', [])
+    c = data.get('colors', [])
 
+
+    try:
+        image_bytes = create_survey_chart(survey_data, cn, c)
+        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 @app.route('/generate_pie3d', methods=['POST'])
 def create_pie3d():
     data = request.json
@@ -117,7 +131,6 @@ def create_dispersione():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-
 @app.route('/risk_bar', methods=['POST'])
 def create_risk_bar():
     data = request.json
@@ -136,7 +149,6 @@ def create_risk_bar():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-
 @app.route('/risk_line', methods=['POST'])
 def create_risk_line():
     data = request.json
