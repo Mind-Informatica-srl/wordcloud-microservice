@@ -25,7 +25,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         # Aggiungi le fasce di rischio come sfondo
         risk_patches = []
         for i, (start, end) in enumerate(risk_zones):
-            patch = ax.axvspan(start, end, color=risk_colors[i], label=f"Rischio: {legend_labels[i]}")
+            patch = ax.axvspan(start, end, color=risk_colors[i], alpha=0.8, label=f"Rischio: {legend_labels[i]}")
             risk_patches.append(patch)
 
         # Definizione delle posizioni per le barre

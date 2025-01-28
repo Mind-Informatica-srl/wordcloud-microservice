@@ -20,7 +20,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     # Aggiungi le fasce di rischio come sfondo
     risk_patches = []
     for i, (start, end) in enumerate(risk_zones):
-        patch = ax.axhspan(start, end, color=risk_colors[i], label=f"Rischio: {legend_labels[i]}")
+        patch = ax.axhspan(start, end, color=risk_colors[i], alpha=0.8, label=f"Rischio: {legend_labels[i]}")
         risk_patches.append(patch)
 
     # Disegna la linea
