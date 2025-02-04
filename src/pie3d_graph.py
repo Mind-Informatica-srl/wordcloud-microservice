@@ -22,7 +22,7 @@ def generate_pie3d(colors, labels, sizes, explode, title):
 
     # Crea il grafico a torta tridimensionale
     plt.figure(figsize=(14, 6))
-    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=True, colors=colors, startangle=0)
+    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=False, colors=colors, startangle=0)
 
     # Aggiungi il titolo al grafico
     plt.title(title)
