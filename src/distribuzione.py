@@ -58,7 +58,7 @@ def create_survey_chart(data, category_names, colors):
 
     # Salva l'immagine in un buffer
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='PNG')
+    plt.savefig(byte_io, format='svg')
     plt.close() 
     byte_io.seek(0)
 

@@ -28,7 +28,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    wc.to_image().save(byte_io, format='PNG')
+    wc.to_image().save(byte_io, format='png')
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

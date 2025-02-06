@@ -11,7 +11,7 @@ def overlayimages(image1, image2):
 
     # Save to a bytes buffer
     img_byte_arr = io.BytesIO()
-    combined_image.save(img_byte_arr, format='PNG')
+    combined_image.save(img_byte_arr, format='svg')
     img_byte_arr.seek(0)
 
     return img_byte_arr

@@ -43,7 +43,7 @@ def overlay_images():
     # Overlay images
     img_byte_arr = overlayimages(image1, image2)
 
-    return send_file(img_byte_arr, mimetype='image/png')
+    return send_file(img_byte_arr, mimetype='image/svg+xml')
 
 @app.route('/generate_barre_in_pila', methods=['POST'])
 def create_barre_in_pila():
@@ -55,7 +55,7 @@ def create_barre_in_pila():
 
     try:
         image_bytes = generate_barre_in_pila(colors, labels, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -68,7 +68,7 @@ def create_barre_in_pila_serie_s():
 
     try:
         image_bytes = generate_barre_in_pila_serie_s(colors, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -82,7 +82,7 @@ def create_barre_orizzontali():
 
     try:
         image_bytes = generate_barre_orizzontali(colors, labels, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
    
@@ -97,7 +97,7 @@ def create_distribuzione():
 
     try:
         image_bytes = create_survey_chart(survey_data, cn, c)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -113,7 +113,7 @@ def create_pie3d():
 
     try:
         image_bytes = generate_pie3d(colors, labels, sizes, explode, title)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -127,7 +127,7 @@ def create_dispersione():
 
     try:
         image_bytes = generate_dispersione(x, y, labels)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -145,7 +145,7 @@ def create_risk_bar():
 
     try:
         image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -161,7 +161,7 @@ def create_risk_line():
 
     try:
         image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

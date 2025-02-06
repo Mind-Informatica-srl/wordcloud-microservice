@@ -45,7 +45,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     plt.tight_layout()
 
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='PNG')
+    plt.savefig(byte_io, format='svg')
     plt.close()
 
     # Restituisce l'immagine come array di byte

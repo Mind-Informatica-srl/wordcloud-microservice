@@ -50,7 +50,7 @@ def generate_barre_orizzontali(colors, labels, sizes):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='PNG')
+    plt.savefig(byte_io, format='svg')
     plt.close()
 
     # Restituisce l'immagine come array di byte

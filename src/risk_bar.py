@@ -82,7 +82,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         # Mostra il grafico
         plt.tight_layout()
         byte_io = io.BytesIO()
-        plt.savefig(byte_io, format='PNG', bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight')
+        plt.savefig(byte_io, format='svg', bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight')
         plt.close()
 
         # Restituisce l'immagine come array di byte
