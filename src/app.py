@@ -14,6 +14,13 @@ from PIL import Image
 
 app = Flask(__name__)
 
+mime_types = {
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "svg": "image/svg+xml",
+        "pdf": "application/pdf"
+    }
+
 @app.route('/generate_wordcloud', methods=['POST'])
 def create_wordcloud():
     data = request.json
@@ -21,10 +28,11 @@ def create_wordcloud():
     word_colors = data.get('wordColors', {})
     word_frequencies = data.get('wordFrequencies', {})
     default_color = data.get('default_color', '#000000')
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/png')
+        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -52,10 +60,11 @@ def create_barre_in_pila():
     colors = data.get('colors', [])
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = generate_barre_in_pila(colors, labels, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = generate_barre_in_pila(colors, labels, sizes, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -65,10 +74,11 @@ def create_barre_in_pila_serie_s():
     print(data)
     colors = data.get('colors', [])
     sizes = data.get('sizes', [])
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = generate_barre_in_pila_serie_s(colors, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -79,10 +89,11 @@ def create_barre_orizzontali():
     colors = data.get('colors', [])
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = generate_barre_orizzontali(colors, labels, sizes)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = generate_barre_orizzontali(colors, labels, sizes, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
    
@@ -93,11 +104,12 @@ def create_distribuzione():
     survey_data = data.get('data', [])
     cn = data.get('category_names', [])
     c = data.get('colors', [])
+    format = data.get('format', 'png')
 
 
     try:
-        image_bytes = create_survey_chart(survey_data, cn, c)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = create_survey_chart(survey_data, cn, c, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -110,10 +122,12 @@ def create_pie3d():
     sizes = data.get('sizes', [])
     explode = data.get('explode', [])
     title = data.get('title', '3D Pie Chart')
+    format = data.get('format', 'png')
+
 
     try:
-        image_bytes = generate_pie3d(colors, labels, sizes, explode, title)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = generate_pie3d(colors, labels, sizes, explode, title, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -124,10 +138,11 @@ def create_dispersione():
     x = data.get('x', [])
     y = data.get('y', [])
     labels = data.get('labels', [])
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = generate_dispersione(x, y, labels)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = generate_dispersione(x, y, labels, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -142,10 +157,11 @@ def create_risk_bar():
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
     bar_colors = data.get('bar_colors', []) 
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -158,10 +174,11 @@ def create_risk_line():
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
+    format = data.get('format', 'png')
 
     try:
-        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels)
-        return send_file(io.BytesIO(image_bytes), mimetype='image/svg+xml')
+        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format)
+        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

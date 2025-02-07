@@ -4,7 +4,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import io
 
-def generate_wordcloud(word_colors, word_frequencies, default_color):
+def generate_wordcloud(word_colors, word_frequencies, default_color, format):
     """
     Genera una word cloud con colori e frequenze personalizzate e restituisce l'immagine come array di byte.
 
@@ -17,7 +17,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color):
         bytearray: L'immagine della word cloud come array di byte.
     """
     # Funzione per applicare i colori personalizzati
-    def custom_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    def custom_color_func(word):
         return word_colors.get(word, default_color)
 
     # Crea la word cloud
@@ -28,7 +28,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    wc.to_image().save(byte_io, format='png')
+    wc.to_image().save(byte_io, format=format)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

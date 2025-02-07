@@ -16,7 +16,7 @@ labels = [
     "Cultura organizzativa", "Equilibrio tra lavoro e vita privata", 
     "Scarsa chiarezza dei ruoli", "Valutazione"
 ]
-def generate_dispersione(x, y, labels):
+def generate_dispersione(x, y, labels, format):
     # Creazione del grafico
     fig, ax = plt.subplots(figsize=(16, 8))
 
@@ -72,7 +72,7 @@ def generate_dispersione(x, y, labels):
     plt.tight_layout()
 
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     # Restituisce l'immagine come array di byte

@@ -5,7 +5,7 @@ import numpy as np
 import io
 
 
-def generate_pie3d(colors, labels, sizes, explode, title):
+def generate_pie3d(colors, labels, sizes, explode, title, format):
     """
     Genera un grafico a torta tridimensionale con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -35,7 +35,7 @@ def generate_pie3d(colors, labels, sizes, explode, title):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     # Restituisce l'immagine come array di byte

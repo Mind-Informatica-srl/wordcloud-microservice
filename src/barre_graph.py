@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 
-def generate_barre_in_pila(colors, labels, sizes):
+def generate_barre_in_pila(colors, labels, sizes, format):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -58,7 +58,7 @@ def generate_barre_in_pila(colors, labels, sizes):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     #  Rimuove i bordi inutili
@@ -68,7 +68,7 @@ def generate_barre_in_pila(colors, labels, sizes):
     byte_io.seek(0)
     return byte_io.read()
 
-def generate_barre_in_pila_serie_s(colors, sizes):
+def generate_barre_in_pila_serie_s(colors, sizes, format):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -119,7 +119,7 @@ def generate_barre_in_pila_serie_s(colors, sizes):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     #  Rimuove i bordi inutili

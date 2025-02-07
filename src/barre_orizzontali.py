@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import numpy as np
-def generate_barre_orizzontali(colors, labels, sizes):
+def generate_barre_orizzontali(colors, labels, sizes, format):
     """
     Genera un grafico a barre orizzontali con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -50,7 +50,7 @@ def generate_barre_orizzontali(colors, labels, sizes):
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     # Restituisce l'immagine come array di byte

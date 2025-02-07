@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import io
 import numpy as np
 
-def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels):
+def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format):
     """
     Crea un grafico a linea con fasce di rischio sullo sfondo.
 
@@ -45,7 +45,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     plt.tight_layout()
 
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close()
 
     # Restituisce l'immagine come array di byte

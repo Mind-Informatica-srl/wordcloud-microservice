@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import io
 import numpy as np
 
-def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors):
+def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format):
     """
     Crea un grafico a barre orizzontali con fasce di rischio sullo sfondo.
 
@@ -82,7 +82,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         # Mostra il grafico
         plt.tight_layout()
         byte_io = io.BytesIO()
-        plt.savefig(byte_io, format='svg', bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight')
+        plt.savefig(byte_io, format=format, bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight', dpi=300)
         plt.close()
 
         # Restituisce l'immagine come array di byte

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import io
 
 
-def create_survey_chart(data, category_names, colors):
+def create_survey_chart(data, category_names, colors, format):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -58,7 +58,7 @@ def create_survey_chart(data, category_names, colors):
 
     # Salva l'immagine in un buffer
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format='svg')
+    plt.savefig(byte_io, format=format)
     plt.close() 
     byte_io.seek(0)
 
