@@ -18,7 +18,7 @@ labels = [
 ]
 def generate_dispersione(x, y, labels, format):
     # Creazione del grafico
-    fig, ax = plt.subplots(figsize=(16, 8))
+    fig, ax = plt.subplots(figsize=(14, 7))
 
     # Aggiunta dei punti
     ax.scatter(x, y, color='red')
@@ -33,16 +33,21 @@ def generate_dispersione(x, y, labels, format):
 
 
     # Aggiunta delle linee per dividere il grafico in 4 parti uguali
-    ax.axhline(y=(min(y) + max(y)) / 2, color='lightgrey', linestyle='-', zorder=0)
-    ax.axvline(x=(min(x) + max(x)) / 2, color='lightgrey', linestyle='-', zorder=0)
+    metaX = (min(x) + max(x)) / 2
+    metaY = (min(y) + max(y)) / 2
+    ax.axhline(y= metaY, color='lightgrey', linestyle='-', zorder=0)
+    ax.axvline(x= metaX, color='lightgrey', linestyle='-', zorder=0)
 
     # Aggiungere su ogni riquadro creato un'etichetta, se il riquadro è in basso si mette sulla base
     # se è in alto si mette sopra
     # Etichette per i quadranti
-    ax.text(20, max(y) + 1, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
-    ax.text(62.5, max(y) + 1, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
-    ax.text(20, 0, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
-    ax.text(62.5, 0, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    quartoquadrante = (max(x) - min(x)) / 8
+    primoquarto = min(x) + quartoquadrante
+    terzoquarto = metaX + quartoquadrante
+    ax.text(primoquarto, max(y) + 1, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(terzoquarto, max(y) + 1, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(primoquarto, 0, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(terzoquarto, 0, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
 
 
 

@@ -20,7 +20,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     # Aggiungi le fasce di rischio come sfondo
     risk_patches = []
     for i, (start, end) in enumerate(risk_zones):
-        patch = ax.axhspan(start, end, color=risk_colors[i], alpha=0.8, label=f"Rischio: {legend_labels[i]}")
+        patch = ax.axhspan(start, end, color=risk_colors[i], alpha=0.8, label=f"{legend_labels[i]}")
         risk_patches.append(patch)
 
     # Disegna la linea
@@ -35,7 +35,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     ax.set_xticklabels(categories, rotation=45, ha="right")
     ax.set_ylim(0, max(risk_zones[-1]) + 10)
     # Aggiungi la legenda per le fasce di rischio lateralmente al grafico
-    ax.legend(handles=risk_patches, loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False)
+    ax.legend(handles=risk_patches[::-1], loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False)
 
     # Rimuovi il bordo nero intorno all'area del grafico
     for spine in ax.spines.values():

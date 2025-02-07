@@ -17,11 +17,12 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
         bytearray: L'immagine della word cloud come array di byte.
     """
     # Funzione per applicare i colori personalizzati
-    def custom_color_func(word):
+    def custom_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return word_colors.get(word, default_color)
 
     # Crea la word cloud
-    wc = WordCloud(width=800, height=400, background_color="white").generate_from_frequencies(word_frequencies)
+    font_path = "fonts/HankenGrotesk-VariableFont_wght.ttf"
+    wc = WordCloud(width=800, height=400, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
     wc.recolor(color_func=custom_color_func)

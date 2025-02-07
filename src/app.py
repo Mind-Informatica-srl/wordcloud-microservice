@@ -105,10 +105,11 @@ def create_distribuzione():
     cn = data.get('category_names', [])
     c = data.get('colors', [])
     format = data.get('format', 'png')
+    cl = data.get('color_labels', [])
 
 
     try:
-        image_bytes = create_survey_chart(survey_data, cn, c, format)
+        image_bytes = create_survey_chart(survey_data, cn, c, format, cl)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500

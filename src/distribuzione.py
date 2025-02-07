@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import io
 
 
-def create_survey_chart(data, category_names, colors, format):
+def create_survey_chart(data, category_names, colors, format, color_labels):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -31,15 +31,17 @@ def create_survey_chart(data, category_names, colors, format):
     ax.invert_yaxis()
     ax.xaxis.set_visible(True)
     ax.set_xlim(0, np.sum(values, axis=1).max())
+    # Aggiungi il simbolo delle percentuali all'asse delle ascisse
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}%'))
 
     for i, (category, color) in enumerate(zip(category_names, colors)):
         widths = values[:, i]
         starts = cumulative_values[:, i] - widths
         rects = ax.barh(labels, widths, left=starts, height=0.5,
-                        label=category, color=color)
+                        label="Stress " + category, color=color)
 
         # Aggiungi etichette al centro di ogni barra
-        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color="black", fontsize=10)
+        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=10)
 
     ax.legend(ncol=len(category_names), bbox_to_anchor=(0.5, -0.2),
               loc='upper center', fontsize='small')

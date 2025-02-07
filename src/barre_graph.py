@@ -23,9 +23,15 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     # Crea il grafico a barre in pila
     fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
+    # for i in range(len(normalized_sizes)):
+    #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)
+    #     if normalized_sizes[i] != 0:
+    #         ax.text(left + normalized_sizes[i] / 2, 0.4, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=12, fontweight='bold')
+    #     left += normalized_sizes[i]
     for i in range(len(normalized_sizes)):
-        ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, label=f"{labels[i]}: {normalized_sizes[i]:.2f}%")
-        ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='center', color='black', fontsize=12)
+        ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
+        if normalized_sizes[i] != 0:
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
         left += normalized_sizes[i]
 
     # Personalizzazioni
@@ -87,10 +93,15 @@ def generate_barre_in_pila_serie_s(colors, sizes, format):
     # Crea il grafico a barre in pila
     fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
+    # for i in range(len(normalized_sizes)):
+    #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)
+    #     if normalized_sizes[i] != 0:
+    #         ax.text(left + normalized_sizes[i] / 2, 0.4, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=12, fontweight='bold')
+    #     left += normalized_sizes[i]
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
-        if i == 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='center', color='black', fontsize=12)
+        if normalized_sizes[i] != 0:
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
         left += normalized_sizes[i]
 
     # Personalizzazioni

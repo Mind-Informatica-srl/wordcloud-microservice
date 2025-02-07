@@ -70,7 +70,6 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             frameon=False  # Rimuovi il bordo
         )      
         ax.add_artist(group_legend)
-        ax.grid(axis="x", linestyle="--", alpha=0.5)
 
         # Rimuovi il bordo nero intorno all'area del grafico
         for spine in ax.spines.values():

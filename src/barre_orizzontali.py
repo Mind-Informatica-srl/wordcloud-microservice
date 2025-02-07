@@ -32,7 +32,8 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
 
     # Aggiungi le etichette ai bar
     for i, v in enumerate(sizes):
-        ax.text(v + 0.1, i, f"{v:.2f}%", color='black', va='center', fontsize=10)
+        v = round(v)
+        ax.text(v + 0.1, i, f"{v}%", color='black', va='center', fontsize=10)
 
     # Riduci lo spazio tra le barre
     ax.set_ylim(-0.5, len(labels) - 0.5)

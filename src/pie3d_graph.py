@@ -22,10 +22,23 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
 
     # Crea il grafico a torta tridimensionale
     plt.figure(figsize=(14, 6))
-    plt.pie(sizes, labels=labels, autopct='%1.2f%%', explode=explode, shadow=False, colors=colors, startangle=0)
+    wedges, texts = plt.pie(
+    sizes, labels=labels, explode=explode, shadow=False, colors=colors, startangle=0,
+    labeldistance=1.1)
+
+    # Calcola le percentuali
+    total = sum(sizes)
+    percentages = ['{:.2f}%'.format(100 * size / total) for size in sizes]
+
 
     # Aggiungi il titolo al grafico
     plt.title(title)
+
+    # Imposta il colore delle etichette e aggiungi le percentuali sotto le etichette
+    for text, percentage, color in zip(texts, percentages, colors):
+        text.set_color(color)
+        text.set_fontsize(10)
+        text.set_text(f'{text.get_text()}\n{percentage}')
 
     # Adatta il layout del grafico
     plt.tight_layout()
