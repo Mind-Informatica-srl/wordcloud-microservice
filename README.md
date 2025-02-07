@@ -57,6 +57,11 @@ wordcloud-microservice
 3. **Response:**
    The response will be a PNG image of the generated word cloud.
 
+
+4. **Docker:**
+   `docker build -t wcloud .`
+   `docker run -p 8080:8080 -d wcloud`
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
