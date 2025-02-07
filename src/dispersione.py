@@ -24,15 +24,15 @@ def generate_dispersione(x, y, labels, format):
     # Aggiunta dei punti
     ax.scatter(x, y, color='red')
     # Aggiunta delle etichette ai punti
-    metaX = (min(x) + max(x)) / 2
-    metaY = (min(y) + max(y)) / 2
+    metaX = 50
+    metaY = 50
     texts = []
     for i, label in enumerate(labels):
         wrapped_label = "\n".join(textwrap.wrap(label, width=30))
         # Impedisce che l'etichetta esca dai margini superiori o inferiori
-        y_text = min(max(y[i] + 0.05, min(y) + 1), max(y) - 3)
+        y_text = min(max(y[i] + 0.05, 1), 97)
         # Impedisce che l'etichetta esca dai margini laterali
-        x_text = min(max(x[i] + 0.05, min(x) + 10), max(x) - 10)
+        x_text = min(max(x[i] + 0.05, 11), 90)
         if x[i] > metaX and y[i] > metaY:
             alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'left'}
         elif x[i] > metaX and y[i] <= metaY:
@@ -61,22 +61,22 @@ def generate_dispersione(x, y, labels, format):
     # Aggiungere su ogni riquadro creato un'etichetta, se il riquadro è in basso si mette sulla base
     # se è in alto si mette sopra
     # Etichette per i quadranti
-    quartoquadrante = ((max(x) + 2) - min(x)) / 8
-    primoquarto = min(x) + quartoquadrante
-    terzoquarto = metaX + quartoquadrante
-    ax.text(primoquarto, max(y) + 2, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
-    ax.text(terzoquarto, max(y) + 2, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    quartoquadrante = 12.5
+    primoquarto = quartoquadrante
+    terzoquarto = 65
+    ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
     # Aggiungi un cerchio rosso sopra l'etichetta
-    circle = patches.Ellipse((terzoquarto + 7, max(y) + 2.5), width=18,height=4, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
+    circle = patches.Ellipse((75, 102.5), width=25,height=6, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
     ax.add_patch(circle)
-    ax.text(primoquarto, 0, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
-    ax.text(terzoquarto, 0, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
+    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white')
 
 
 
     # Personalizzazioni
-    ax.set_xlim(min(x) - 1, max(x) + 2)
-    ax.set_ylim(min(y) - 1, max(y) + 2)
+    ax.set_xlim(0, 102)
+    ax.set_ylim(0, 102)
     ax.set_xlabel("IMPORTANZA", fontsize=12, labelpad=10)
     ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=12, labelpad=10)
     ax.spines['top'].set_color('green')
