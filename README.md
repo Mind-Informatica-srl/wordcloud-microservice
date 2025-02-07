@@ -60,6 +60,7 @@ wordcloud-microservice
 
 4. **Docker:**
    `docker build -t wcloud .`
+   
    `docker run -p 8080:8080 -d wcloud`
 
 ## License
