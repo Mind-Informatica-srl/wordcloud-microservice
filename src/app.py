@@ -75,9 +75,10 @@ def create_barre_in_pila_serie_s():
     colors = data.get('colors', [])
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
+    fasce = data.get('fasce_confidenza', [])
 
     try:
-        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, format)
+        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, fasce, format)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -74,7 +74,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     byte_io.seek(0)
     return byte_io.read()
 
-def generate_barre_in_pila_serie_s(colors, sizes, format):
+def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -124,6 +124,10 @@ def generate_barre_in_pila_serie_s(colors, sizes, format):
     # Aggiungi linee grigie chiare per ogni etichetta dell'asse delle ascisse
     ax.grid(axis='x', color='lightgrey', linestyle='-', linewidth=0.5)
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
+
+    # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
+    for i in range(len(fasce)):
+        ax.axvline(fasce[i], color='black', linestyle='-', linewidth=1.5)
 
     # Adatta il layout del grafico
     plt.tight_layout()
