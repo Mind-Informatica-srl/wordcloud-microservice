@@ -32,7 +32,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
 
     # Configura assi e legenda
     ax.set_xticks(x_positions)
-    ax.set_xticklabels(categories, rotation=45, ha="right")
+    ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right")
     ax.set_ylim(0, max(risk_zones[-1]) + 10)
     # Aggiungi la legenda per le fasce di rischio lateralmente al grafico
     ax.legend(handles=risk_patches[::-1], loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False)
