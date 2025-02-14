@@ -20,7 +20,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
     try:
         num_categories = len(categories)
         bar_height = 0.1 # / len(groups)
-        fig, ax = plt.subplots(figsize=(16, 8)) 
+        fig, ax = plt.subplots(figsize=(14, 7)) 
 
         # Aggiungi le fasce di rischio come sfondo
         risk_patches = []
@@ -62,9 +62,10 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         ax.add_artist(risk_legend)
 
         # Seconda legenda per i gruppi
+        bar_colors_used = [bar_colors[groups.index(group)] for group in groups]
         group_legend = ax.legend(
-            handles=[plt.Line2D([0], [0], color=color, lw=4) for color in bar_colors], 
-            labels=groups,  # Usa groups per le etichette della legenda
+            handles=[plt.Line2D([0], [0], color=color, lw=4) for color in reversed(bar_colors_used)], 
+            labels=list(reversed(groups)),  # Usa groups per le etichette della legenda in ordine inverso
             loc="center left", 
             bbox_to_anchor=(1, 0.5), 
             frameon=False  # Rimuovi il bordo

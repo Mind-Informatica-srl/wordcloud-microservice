@@ -21,7 +21,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
         return word_colors.get(word, default_color)
 
     # Crea la word cloud
-    font_path = "fonts/HankenGrotesk-VariableFont_wght.ttf"
+    font_path = "fonts/Figtree-VariableFont_wght.ttf"
     wc = WordCloud(width=800, height=400, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
