@@ -9,7 +9,9 @@ from risk_line import create_risk_line_chart
 from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
 from distribuzione import create_survey_chart
+from mod_office import process_file
 import io
+import os
 from PIL import Image
 
 app = Flask(__name__)
@@ -18,8 +20,13 @@ mime_types = {
         "png": "image/png",
         "jpg": "image/jpeg",
         "svg": "image/svg+xml",
-        "pdf": "application/pdf"
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     }
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/generate_wordcloud', methods=['POST'])
 def create_wordcloud():
@@ -183,6 +190,30 @@ def create_risk_line():
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/modify-office', methods=['POST'])
+def modifica_office():
+    replacements = {
+    "{NOME}": "Mario Rossi",
+    "{RUOLO}": "Chef",
+    "{{azienda_prova}}": "MIND1234567890",
+	"{{testo_prova_1}}": "Testo di prova del titolo",
+	"{{testo_prova_2}}": "Testo di prova 2",
+    }
+
+    image_replacements = {
+    # "image.png": "storage/image1.png",  # Inserisci il percorso dell'immagine da sostituire
+    "{{immagine_prova1}}": "storage/image1.png"  # Inserisci il percorso dell'immagine da sostituire
+    }
+
+    # Percorso del file da modificare
+    file_path = "storage/immagine.docx"  # O "path/to/your/file.docx"
+
+    # Processare il file
+    process_file(file_path, replacements, image_replacements)
+
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
