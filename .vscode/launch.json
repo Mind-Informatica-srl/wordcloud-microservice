@@ -7,7 +7,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/app.py",
             "env": {
-                "FLASK_ENV": "development"
+                "FLASK_ENV": "development",
+                "BASE_URL": "http://localhost:80"
             },
             "args": [
                 "run",

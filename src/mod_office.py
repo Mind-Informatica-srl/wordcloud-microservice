@@ -1,3 +1,4 @@
+import copy
 from pptx import Presentation
 import docx
 from docx.shared import Inches
@@ -150,23 +151,7 @@ def duplicate_and_replace_slide(pptx_path, replacements_dict):
 
             # Copia gli elementi della slide originale nella nuova slide
             for shape in slide_to_copy.shapes:
-                if shape.has_text_frame:
-                    new_shape = new_slide.shapes.add_textbox(shape.left, shape.top, shape.width, shape.height)
-                    new_shape.text = shape.text
-                    for i, p in enumerate(shape.text_frame.paragraphs):
-                        new_shape.text_frame.paragraphs[i].font.name = p.font.name
-                        new_shape.text_frame.paragraphs[i].font.size = p.font.size
-                        new_shape.text_frame.paragraphs[i].font.bold = p.font.bold
-                        new_shape.text_frame.paragraphs[i].font.italic = p.font.italic
-                        new_shape.text_frame.paragraphs[i].font.underline = p.font.underline
-                        new_shape.text_frame.paragraphs[i].alignment = p.alignment
-                        new_shape.text_frame.paragraphs[i].space_before = p.space_before
-                        new_shape.text_frame.paragraphs[i].space_after = p.space_after
-                        new_shape.rotation = shape.rotation
-                        # new_shape.fill.solid()
-                        if p.font.color._color.color_type is not None:
-                            new_shape.text_frame.paragraphs[i].font.color.rgb = p.font.color.rgb
-                elif shape.shape_type == 13:  # Immagine
+                if shape.shape_type == 13:  # Immagine
                     image_stream = io.BytesIO(shape.image.blob)
                     new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
                      # Copia il testo alternativo
@@ -175,59 +160,12 @@ def duplicate_and_replace_slide(pptx_path, replacements_dict):
                         cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
                         if cNvPr is not None:
                             alt_text = cNvPr.get('descr')
-                            new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
-                elif shape.shape_type == 6:  # Gruppo di forme
-                    for sub_shape in shape.shapes:
-                        if sub_shape.has_text_frame:
-                            new_sub_shape = new_slide.shapes.add_textbox(sub_shape.left, sub_shape.top, sub_shape.width, sub_shape.height)
-                            new_sub_shape.text = sub_shape.text
-                            for i, p in enumerate(sub_shape.text_frame.paragraphs):
-                                new_sub_shape.text_frame.paragraphs[i].font.name = p.font.name
-                                new_sub_shape.text_frame.paragraphs[i].font.size = p.font.size
-                                new_sub_shape.text_frame.paragraphs[i].font.bold = p.font.bold
-                                new_sub_shape.text_frame.paragraphs[i].font.italic = p.font.italic
-                                new_sub_shape.text_frame.paragraphs[i].font.underline = p.font.underline
-                                new_sub_shape.text_frame.paragraphs[i].alignment = p.alignment
-                                new_sub_shape.text_frame.paragraphs[i].space_before = p.space_before
-                                new_sub_shape.text_frame.paragraphs[i].space_after = p.space_after
-                                new_sub_shape.rotation = sub_shape.rotation
-                                # new_sub_shape.fill.solid()
-                                # if sub_shape.fill.fore_color.type is not None:
-                                #     new_sub_shape.fill.fore_color.rgb = sub_shape.fill.fore_color.rgb
-                                # if sub_shape.line.color.type is not None:
-                                #     new_sub_shape.line.color.rgb = sub_shape.line.color.rgb
-                                # new_sub_shape.line.width = sub_shape.line.width
-                                if p.font.color._color.color_type is not None:
-                                    new_sub_shape.text_frame.paragraphs[i].font.color.rgb = p.font.color.rgb
-                        elif sub_shape.shape_type == 13:  # Immagine
-                            image_stream = io.BytesIO(sub_shape.image.blob)
-                            new_image = new_slide.shapes.add_picture(image_stream, sub_shape.left, sub_shape.top, sub_shape.width, sub_shape.height)
-                            # Copia il testo alternativo
-                            image_element = sub_shape._element
-                            if image_element is not None:
-                                cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                                if cNvPr is not None:
-                                    alt_text = cNvPr.get('descr')
-                                    if alt_text is not None:
-                                        new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
-                                    else:
-                                        new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                        else:
-                            # Copia altre forme come rettangoli, cerchi, ecc.
-                            new_sub_shape = new_slide.shapes.add_shape(sub_shape.auto_shape_type, sub_shape.left, sub_shape.top, sub_shape.width, sub_shape.height)
-                            # new_sub_shape.fill.solid()
-                            # if sub_shape.fill.fore_color.type is not None:
-                            #     new_sub_shape.fill.fore_color.rgb = sub_shape.fill.fore_color.rgb
-                            # if sub_shape.line.color.type is not None:
-                            #     new_sub_shape.line.color.rgb = sub_shape.line.color.rgb
-                            # new_sub_shape.line.width = sub_shape.line.width
+                            if alt_text is not None:
+                                new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
                 else:
-                    # Copia altre forme come rettangoli, cerchi, ecc.
-                    new_shape = new_slide.shapes.add_shape(shape.auto_shape_type, shape.left, shape.top, shape.width, shape.height)
-                    new_shape.fill.fore_color.rgb = shape.fill.fore_color.rgb
-                    new_shape.line.color.rgb = shape.line.color.rgb
-                    new_shape.line.width = shape.line.width
-
+                    el = shape.element
+                    new_shape = copy.deepcopy(el)
+                    new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
             # Sostituzione testo e immagini
             for shape in new_slide.shapes:
                 if shape.has_text_frame:
@@ -271,6 +209,7 @@ def save_image(image, image_path):
     }
 
     for key, url in image.items():
+        url = os.getenv("BASE_URL") + url
         response = requests.get(url)
         if response.status_code == 200:
             image = response.content
