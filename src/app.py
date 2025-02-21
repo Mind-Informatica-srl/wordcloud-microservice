@@ -9,10 +9,11 @@ from risk_line import create_risk_line_chart
 from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
 from distribuzione import create_survey_chart
-from mod_office import process_file
+from mod_office import process_file, save_image, elimina_cartella
 import io
 import os
 from PIL import Image
+import base64
 
 app = Flask(__name__)
 
@@ -25,7 +26,7 @@ mime_types = {
         "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     }
 
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = "storage"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/generate_wordcloud', methods=['POST'])
@@ -193,26 +194,42 @@ def create_risk_line():
     
 @app.route('/modify-office', methods=['POST'])
 def modifica_office():
-    replacements = {
-    "{NOME}": "Mario Rossi",
-    "{RUOLO}": "Chef",
-    "{{azienda_prova}}": "MIND1234567890",
-	"{{testo_prova_1}}": "Testo di prova del titolo",
-	"{{testo_prova_2}}": "Testo di prova 2",
-    }
+    data = request.json
+    print(data)
+    name = data.get('name', 'pp.pptx')
+    file = data.get('file', '')
+    # decodifica il file in base64
+    file = base64.b64decode(file)
 
-    image_replacements = {
-    # "image.png": "storage/image1.png",  # Inserisci il percorso dell'immagine da sostituire
-    "{{immagine_prova1}}": "storage/image1.png"  # Inserisci il percorso dell'immagine da sostituire
-    }
+    replacements = data.get('replacements', [])
+    image_replacements = data.get('image_replacements', [])
+    replacements_for_each = data.get('replacements_for_each', [])
 
-    # Percorso del file da modificare
-    file_path = "storage/immagine.docx"  # O "path/to/your/file.docx"
+    file_path = os.path.join(UPLOAD_FOLDER, name)
+    path_save = os.path.join(UPLOAD_FOLDER, 'immagini')
+    os.makedirs(path_save, exist_ok=True)
+    indicatori_path = os.path.join(path_save, 'indicatori')
+    os.makedirs(indicatori_path, exist_ok=True)
 
-    # Processare il file
-    process_file(file_path, replacements, image_replacements)
+    image_saved = save_image(image_replacements, path_save)
+    # file_byte = bytes(file, 'utf-8')
+    ext = os.path.splitext(name)[1][1:].lower()
+    
 
+    try:
+        with open(file_path, 'wb') as f:
+            f.write(file)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+    try:
+        # Processare il file
+        fileByte = process_file(file_path, replacements, image_saved, replacements_for_each)
+        elimina_cartella(UPLOAD_FOLDER)
+        return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == "__main__":
