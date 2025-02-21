@@ -3,3 +3,6 @@ wordcloud
 Pillow
 jsonschema
 adjustText
+python-pptx
+python-docx
+requests
