@@ -15,8 +15,7 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
             if shape.has_text_frame:
                 for para in shape.text_frame.paragraphs:
                     for run in para.runs:
-                        wordsPp = run.text.split()
-                        words = re.split(r'(\s+|{{.*?}})', wordsPp)
+                        words = run.text.split()
                         new_text = []
                         for word in words:
                             for placeholder, text in replacements.items():
