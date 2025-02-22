@@ -67,7 +67,9 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
                         sp = shape
                         slide.shapes._spTree.remove(sp._element)
 
+    return ppt
 
+def salva_byte_pptx(ppt):
     # Salvare il file PPTX modificato
     storage_path = os.path.join("storage", "modificati")
     os.makedirs(storage_path, exist_ok=True)
@@ -217,6 +219,19 @@ def duplicate_and_replace_slide(pptx_path, replacements_dict):
 
     return ppt
 
+def elimina_slide(ppt, tipo_woseq):
+    for slide in ppt.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    for run in para.runs:
+                        if tipo_woseq in run.text:
+                            slide_id = slide.slide_id
+                            slide = ppt.slides._sldIdLst[slide_id]
+                            ppt.slides._sldIdLst.remove(slide)
+                            break
+    return ppt
+
 def save_image(image, image_path):
     """
     in image ho una mappa stringa stringa
@@ -265,8 +280,11 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     ext = os.path.splitext(file_path)[1].lower()
 
     if ext == ".pptx":
+        ppt = Presentation(file_path)
+        ppt = elimina_slide(ppt, replacements["{{tipo_woseq}}"])
         ppt = duplicate_and_replace_slide(file_path, replacements_for_each)
-        file_byte = replace_text_in_pptx(ppt, replacements, image_replacements)
+        ppt = replace_text_in_pptx(ppt, replacements, image_replacements)
+        file_byte = salva_byte_pptx(ppt)
         return file_byte
         # replace_text_in_pptx(file_path, replacements, image_replacements)
     elif ext == ".docx":
