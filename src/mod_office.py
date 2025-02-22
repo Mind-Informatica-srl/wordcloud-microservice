@@ -6,6 +6,7 @@ import os
 import requests
 import shutil
 import io
+import re
 
 def replace_text_in_pptx(ppt, replacements, image_replacements):
     # Sostituire i testi nei segnaposto
@@ -14,9 +15,29 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
             if shape.has_text_frame:
                 for para in shape.text_frame.paragraphs:
                     for run in para.runs:
-                        for placeholder, text in replacements.items():
-                            if placeholder in run.text:
-                                run.text = run.text.replace(placeholder, text)
+                        wordsPp = run.text.split()
+                        words = re.split(r'(\s+|{{.*?}})', wordsPp)
+                        new_text = []
+                        for word in words:
+                            for placeholder, text in replacements.items():
+                                if placeholder in word:
+                                    word = word.replace(placeholder, text)
+                            new_text.append(word)
+                        run.text = ' '.join(new_text)
+            elif shape.shape_type == 6:  # Gruppo di forme
+                for sub_shape in shape.shapes:
+                    if sub_shape.has_text_frame:
+                        for para in sub_shape.text_frame.paragraphs:
+                            for run in para.runs:
+                                words = run.text.split()
+                                new_text = []
+                                for word in words:
+                                    for placeholder, text in replacements.items():
+                                        if placeholder in word:
+                                            word = word.replace(placeholder, text)
+                                    new_text.append(word)
+                                run.text = ' '.join(new_text)
+
 
     # Sostituire le immagini
     for slide in ppt.slides:
