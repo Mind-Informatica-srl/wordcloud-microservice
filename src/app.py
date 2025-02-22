@@ -9,7 +9,7 @@ from risk_line import create_risk_line_chart
 from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
 from distribuzione import create_survey_chart
-from mod_office import process_file, save_image, elimina_cartella
+from mod_office import process_file, elimina_cartella
 import io
 import os
 from PIL import Image
@@ -211,7 +211,7 @@ def modifica_office():
     indicatori_path = os.path.join(path_save, 'indicatori')
     os.makedirs(indicatori_path, exist_ok=True)
 
-    image_saved = save_image(image_replacements, path_save)
+    # image_saved = save_image(image_replacements, path_save)
     # file_byte = bytes(file, 'utf-8')
     ext = os.path.splitext(name)[1][1:].lower()
     
@@ -224,7 +224,7 @@ def modifica_office():
 
     try:
         # Processare il file
-        fileByte = process_file(file_path, replacements, image_saved, replacements_for_each)
+        fileByte = process_file(file_path, replacements, image_replacements, replacements_for_each)
         elimina_cartella(UPLOAD_FOLDER)
         return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
     except Exception as e:

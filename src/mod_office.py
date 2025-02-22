@@ -52,17 +52,21 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
                     if cNvPr is not None:
                         alt_text = cNvPr.get('descr')
 
+
+
                 for placeholder, image_path in image_replacements.items():
                     if placeholder in shape.image.filename:
                         # Posizione e dimensioni dell'immagine
                         left, top, width, height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
-                        slide.shapes.add_picture(image_path, left, top, width, height)
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini")
+                        slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                     elif alt_text is not None and placeholder in alt_text:
                         # Posizione e dimensioni dell'immagine
                         left, top, width, height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
-                        slide.shapes.add_picture(image_path, left, top, width, height)
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini")
+                        slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                         # Rimuove l'immagine originale
                         sp = shape
                         slide.shapes._spTree.remove(sp._element)
@@ -202,8 +206,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
                             alt_text = cNvPr.get('descr')
 
                     for placeholder, image_path in element["immagini"].items():
-                        current_image_item = {placeholder: image_path}  # Memorizza l'elemento corrente
-                        img_saved = save_image(current_image_item, "storage/immagini/indicatori")
+                        img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
                         if placeholder in shape.image.filename:
                             left, top, width, height = shape.left, shape.top, shape.width, shape.height
                             new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
@@ -241,7 +244,7 @@ def flitra_per_tipo_woseq(ppt, tipo_woseq):
 
     return ppt
 
-def save_image(image, image_path):
+def save_image(key, url, image_path):
     """
     in image ho una mappa stringa stringa
     nei valori ho un url di un immagine
@@ -252,31 +255,21 @@ def save_image(image, image_path):
         # "{{immagine_prova1}}": "storage/immagini/image1.png"
     }
 
-    for key, url in image.items():
-        url = os.getenv("BASE_URL") + url
-        response = requests.get(url)
-        if response.status_code == 200:
-            image = response.content
-        else:
-            print(f"Errore durante il download dell'immagine da '{url}'")
-            continue
-        
-        if key.startswith("{{"):
-            ph = key
-        else:
-            ph = "{{immagine_"+ key + "}}"
-        if key.startswith("C5") or key.startswith("C6") or key.startswith("C7") or key.startswith("{{"):
-            key = key + ".png"
-        else:
-            key = key + ".svg"
-
-
-        path_save = os.path.join(image_path, key)
-
-        with open(path_save, "wb") as f:
-            f.write(image)
-
-        saved_images[ph] = path_save
+    url = os.getenv("BASE_URL") + url
+    response = requests.get(url)
+    if response.status_code == 200:
+        image = response.content
+    else:
+        print(f"Errore durante il download dell'immagine da '{url}'")
+    
+    # Salvare l'immagine
+    k = key
+    key = key.replace("{{", "").replace("}}", "")
+    ph = key + ".png"
+    path_save = os.path.join(image_path, ph)
+    with open(path_save, "wb") as f:
+        f.write(image)
+    saved_images[k] = path_save
 
     return saved_images
 
