@@ -135,7 +135,7 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
     return docx_bytes
 
 
-def duplicate_and_replace_slide(pptx_path, replacements_dict):
+def duplicate_and_replace_slide(ppt, replacements_dict):
     """
     Duplica una slide e applica le sostituzioni di testo e immagine per ogni elemento in replacements_dict.
     
@@ -143,9 +143,6 @@ def duplicate_and_replace_slide(pptx_path, replacements_dict):
     :param slide_index: Indice della slide da duplicare
     :param replacements_dict: Dizionario con le sostituzioni di testo e immagine per ogni placeholder
     """
-    
-    # Carica la presentazione esistente
-    ppt = Presentation(pptx_path)
 
     # Trova le slide con i placeholder
     slides_to_duplicate = []
@@ -219,17 +216,29 @@ def duplicate_and_replace_slide(pptx_path, replacements_dict):
 
     return ppt
 
-def elimina_slide(ppt, tipo_woseq):
+def flitra_per_tipo_woseq(ppt, tipo_woseq):
+    """
+        controllo tutte le slide, se la slide possiede la stringa {{if_tipo_woseq:
+        se non esiste vado avanti
+        se esiste controllo se la stringa è uguale a quella passata
+        se è uguale la tengo
+        se non è uguale la elimino
+    """
+
+    slides_to_remove = []
     for slide in ppt.slides:
         for shape in slide.shapes:
             if shape.has_text_frame:
                 for para in shape.text_frame.paragraphs:
-                    for run in para.runs:
-                        if tipo_woseq in run.text:
-                            slide_id = slide.slide_id
-                            slide = ppt.slides._sldIdLst[slide_id]
-                            ppt.slides._sldIdLst.remove(slide)
+                    if para.text.startswith("{{if_tipo_woseq:"):
+                        if para.text != tipo_woseq:
+                            slides_to_remove.append(slide)
                             break
+
+    for slide in slides_to_remove:
+        slide_idx = ppt.slides.index(slide)
+        ppt.slides._sldIdLst.remove(ppt.slides._sldIdLst[slide_idx])
+
     return ppt
 
 def save_image(image, image_path):
@@ -279,10 +288,14 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     # Verifica il tipo di file
     ext = os.path.splitext(file_path)[1].lower()
 
+    for key, value in replacements.items():
+        if key.startswith("{{if_tipo_woseq:") and key.endswith("}}"):
+            if_tipo_woseq = key
+
     if ext == ".pptx":
         ppt = Presentation(file_path)
-        ppt = elimina_slide(ppt, replacements["{{tipo_woseq}}"])
-        ppt = duplicate_and_replace_slide(file_path, replacements_for_each)
+        ppt = flitra_per_tipo_woseq(ppt, if_tipo_woseq)
+        ppt = duplicate_and_replace_slide(ppt, replacements_for_each)
         ppt = replace_text_in_pptx(ppt, replacements, image_replacements)
         file_byte = salva_byte_pptx(ppt)
         return file_byte
