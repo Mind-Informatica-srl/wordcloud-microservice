@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file, jsonify
 from barre_graph import generate_barre_in_pila
 from barre_graph import generate_barre_in_pila_serie_s
+from constants import UPLOAD_FOLDER
 from dispersione import generate_dispersione
 from overaly_images import overlayimages
 from pie3d_graph import generate_pie3d
@@ -26,7 +27,7 @@ mime_types = {
         "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     }
 
-UPLOAD_FOLDER = "storage"
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/generate_wordcloud', methods=['POST'])
@@ -202,6 +203,7 @@ def modifica_office():
     file = base64.b64decode(file)
 
     replacements = data.get('replacements', [])
+    # trasformo replacements in una lista di tuple con chiave e valore
     image_replacements = data.get('image_replacements', [])
     replacements_for_each = data.get('replacements_for_each', [])
 
@@ -211,7 +213,7 @@ def modifica_office():
     indicatori_path = os.path.join(path_save, 'indicatori')
     os.makedirs(indicatori_path, exist_ok=True)
 
-    image_saved = save_image(image_replacements, path_save)
+    image_saved = [] # save_image(image_replacements, path_save)
     # file_byte = bytes(file, 'utf-8')
     ext = os.path.splitext(name)[1][1:].lower()
     

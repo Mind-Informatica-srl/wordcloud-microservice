@@ -1,12 +1,16 @@
 import copy
 from pptx import Presentation
 import docx
-from docx.shared import Inches
 import os
 import requests
 import shutil
 import io
 import re
+from python_pptx_text_replacer import TextReplacer
+
+from constants import UPLOAD_FOLDER
+from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
+
 
 def replace_text_in_pptx(ppt, replacements, image_replacements):
     # Sostituire i testi nei segnaposto
@@ -150,7 +154,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
         for shape in slide.shapes:
             if shape.has_text_frame:
                 text = shape.text.strip()
-                for placeholder, data in replacements_dict.items():
+                for placeholder, _ in replacements_dict.items():
                     if text == placeholder:
                         slides_to_duplicate.append((idx, placeholder))
                         break
@@ -213,34 +217,6 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
                             sp = shape
                             new_slide.shapes._spTree.remove(sp._element)
 
-
-    return ppt
-
-def flitra_per_tipo_woseq(ppt, tipo_woseq):
-    """
-        controllo tutte le slide, se la slide possiede la stringa {{if_tipo_woseq:
-        se non esiste vado avanti
-        se esiste controllo se la stringa è uguale a quella passata
-        se è uguale la tengo
-        se non è uguale la elimino
-    """
-
-    slides_to_remove = []
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                for para in shape.text_frame.paragraphs:
-                    if para.text.startswith("{{if_tipo_woseq:"):
-                        if para.text != tipo_woseq:
-                            slides_to_remove.append(slide)
-                            break
-
-    for slide in slides_to_remove:
-        slide_idx = ppt.slides.index(slide)
-        ppt.slides._sldIdLst.remove(ppt.slides._sldIdLst[slide_idx])
-
-    return ppt
-
 def save_image(image, image_path):
     """
     in image ho una mappa stringa stringa
@@ -285,26 +261,40 @@ def elimina_cartella(path):
         shutil.rmtree(path)
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
+    changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
+    ppt = Presentation(file_path)
+    filtra_per_tipo_woseq(ppt, replacements)
+    duplicate_and_replace_slide(ppt, replacements_for_each)
+    with open(changed_presentation, 'wb') as f:
+        ppt.save(f)
+    replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
+    replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
+    replacer.replace_text(replacements_t)
+    replacer.write_presentation_to_file(changed_presentation)
+    with open(changed_presentation, 'rb') as f:
+        file = f.read()
+    return file
+    
     # Verifica il tipo di file
-    ext = os.path.splitext(file_path)[1].lower()
+    # ext = os.path.splitext(file_path)[1].lower()
 
-    for key, value in replacements.items():
-        if key.startswith("{{if_tipo_woseq:") and key.endswith("}}"):
-            if_tipo_woseq = key
+    # for key, value in replacements.items():
+    #     if key.startswith("{{if_tipo_woseq:") and key.endswith("}}"):
+    #         if_tipo_woseq = key
 
-    if ext == ".pptx":
-        ppt = Presentation(file_path)
-        ppt = flitra_per_tipo_woseq(ppt, if_tipo_woseq)
-        ppt = duplicate_and_replace_slide(ppt, replacements_for_each)
-        ppt = replace_text_in_pptx(ppt, replacements, image_replacements)
-        file_byte = salva_byte_pptx(ppt)
-        return file_byte
-        # replace_text_in_pptx(file_path, replacements, image_replacements)
-    elif ext == ".docx":
-        file_byte = replace_text_in_docx(file_path, replacements, image_replacements)
-        return file_byte
-    else:
-        print("Tipo di file non supportato. Supportiamo solo .pptx e .docx.")
+    # if ext == ".pptx":
+    #     ppt = Presentation(file_path)
+    #     ppt = flitra_per_tipo_woseq(ppt, if_tipo_woseq)
+    #     ppt = duplicate_and_replace_slide(ppt, replacements_for_each)
+    #     ppt = replace_text_in_pptx(ppt, replacements, image_replacements)
+    #     file_byte = salva_byte_pptx(ppt)
+    #     return file_byte
+    #     # replace_text_in_pptx(file_path, replacements, image_replacements)
+    # elif ext == ".docx":
+    #     file_byte = replace_text_in_docx(file_path, replacements, image_replacements)
+    #     return file_byte
+    # else:
+    #     print("Tipo di file non supportato. Supportiamo solo .pptx e .docx.")
 
 # # Esempio di utilizzo:
 # replacements = {
