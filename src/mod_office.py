@@ -9,6 +9,7 @@ import re
 from python_pptx_text_replacer import TextReplacer
 
 from constants import UPLOAD_FOLDER
+from office.duplicate_and_replace_slide import duplicate_and_replace_slide
 from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
 
 
@@ -138,85 +139,6 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
 
     return docx_bytes
 
-
-def duplicate_and_replace_slide(ppt, replacements_dict):
-    """
-    Duplica una slide e applica le sostituzioni di testo e immagine per ogni elemento in replacements_dict.
-    
-    :param ppt: Presentazione PowerPoint aperta con python-pptx
-    :param slide_index: Indice della slide da duplicare
-    :param replacements_dict: Dizionario con le sostituzioni di testo e immagine per ogni placeholder
-    """
-
-    # Trova le slide con i placeholder
-    slides_to_duplicate = []
-    for idx, slide in enumerate(ppt.slides):
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                text = shape.text.strip()
-                for placeholder, _ in replacements_dict.items():
-                    if text == placeholder:
-                        slides_to_duplicate.append((idx, placeholder))
-                        break
-
-    # Duplica e modifica le slide
-    for slide_idx, placeholder in slides_to_duplicate:
-        slide_to_copy = ppt.slides[slide_idx]
-        elements = replacements_dict[placeholder]    
-
-        for idx, element in enumerate(elements):
-            new_slide = ppt.slides.add_slide(ppt.slide_layouts[6])  # Duplica la slide
-
-            # Inserisci la nuova slide nella stessa posizione della slide originale
-            slide_id = ppt.slides._sldIdLst[-1]
-            ppt.slides._sldIdLst.remove(slide_id)
-            ppt.slides._sldIdLst.insert(slide_idx + idx + 1, slide_id)
-
-            # Copia gli elementi della slide originale nella nuova slide
-            for shape in slide_to_copy.shapes:
-                if shape.shape_type == 13:  # Immagine
-                    image_stream = io.BytesIO(shape.image.blob)
-                    new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
-                     # Copia il testo alternativo
-                    image_element = shape._element
-                    if image_element is not None:
-                        cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                        if cNvPr is not None:
-                            alt_text = cNvPr.get('descr')
-                            if alt_text is not None:
-                                new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
-                else:
-                    el = shape.element
-                    new_shape = copy.deepcopy(el)
-                    new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
-            # Sostituzione testo e immagini
-            for shape in new_slide.shapes:
-                if shape.has_text_frame:
-                    text = shape.text.strip()
-                    for placeholder, text_change in element["testuali"].items():
-                        if text == placeholder:
-                            shape.text = text_change 
-
-                elif shape.shape_type == 13:  # 🔹 Sostituzione immagini
-                    image_element = shape._element
-                    alt_text = None
-                    if image_element is not None:
-                        cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                        if cNvPr is not None:
-                            alt_text = cNvPr.get('descr')
-
-                    for placeholder, image_path in element["immagini"].items():
-                        current_image_item = {placeholder: image_path}  # Memorizza l'elemento corrente
-                        img_saved = save_image(current_image_item, "storage/immagini/indicatori")
-                        if placeholder in shape.image.filename:
-                            left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                            new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
-                        elif alt_text is not None and placeholder in alt_text:
-                            left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                            new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
-                            sp = shape
-                            new_slide.shapes._spTree.remove(sp._element)
-
 def save_image(image, image_path):
     """
     in image ho una mappa stringa stringa
@@ -264,12 +186,20 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
     ppt = Presentation(file_path)
     filtra_per_tipo_woseq(ppt, replacements)
-    duplicate_and_replace_slide(ppt, replacements_for_each)
+    for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
     with open(changed_presentation, 'wb') as f:
         ppt.save(f)
     replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
     replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
     replacer.replace_text(replacements_t)
+    for for_type, sequences in for_indexes.items():
+        reps = replacements_for_each.get(for_type)
+        for sequence in sequences:
+            for ind, sliden in enumerate(sequence):
+                rep = reps[ind]
+                rep_t = [(placeholder, text) for placeholder, text in rep.items()]
+                replacer.replace_text(rep_t, slide_index=sliden)
+            
     replacer.write_presentation_to_file(changed_presentation)
     with open(changed_presentation, 'rb') as f:
         file = f.read()
