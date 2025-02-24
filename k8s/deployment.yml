@@ -22,3 +22,5 @@ spec:
         env:
         - name: FLASK_ENV
           value: production
+        - name: BASE_URL
+          value: http://perwork
