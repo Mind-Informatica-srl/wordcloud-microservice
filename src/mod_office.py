@@ -11,6 +11,7 @@ from python_pptx_text_replacer import TextReplacer
 from constants import UPLOAD_FOLDER
 from office.duplicate_and_replace_slide import duplicate_and_replace_slide
 from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
+from office.save_image import save_image
 
 
 def replace_text_in_pptx(ppt, replacements, image_replacements):
@@ -143,35 +144,6 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
 
     return docx_bytes
 
-def save_image(key, url, image_path):
-    """
-    in image ho una mappa stringa stringa
-    nei valori ho un url di un immagine
-    devo fare la chiamata all'url che mi restituisce i byte
-    e salvarli in image_path
-    """
-    saved_images = {
-        # "{{immagine_prova1}}": "storage/immagini/image1.png"
-    }
-
-    url = os.getenv("BASE_URL") + url
-    response = requests.get(url)
-    if response.status_code == 200:
-        image = response.content
-    else:
-        print(f"Errore durante il download dell'immagine da '{url}'")
-    
-    # Salvare l'immagine
-    k = key
-    key = key.replace("{{", "").replace("}}", "")
-    ph = key + ".png"
-    path_save = os.path.join(image_path, ph)
-    with open(path_save, "wb") as f:
-        f.write(image)
-    saved_images[k] = path_save
-
-    return saved_images
-
 def elimina_cartella(path):
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -186,15 +158,18 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
     replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
     replacer.replace_text(replacements_t)
+    replacer.write_presentation_to_file(changed_presentation)
     for for_type, sequences in for_indexes.items():
         reps = replacements_for_each.get(for_type)
         for sequence in sequences:
             for ind, sliden in enumerate(sequence):
-                rep = reps[ind]
+                slidenstr = str(sliden+1)
+                replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
+                rep = reps[ind]['testuali']
                 rep_t = [(placeholder, text) for placeholder, text in rep.items()]
-                replacer.replace_text(rep_t, slide_index=sliden)
+                replacer.replace_text(rep_t)
+                replacer.write_presentation_to_file(changed_presentation)
             
-    replacer.write_presentation_to_file(changed_presentation)
     with open(changed_presentation, 'rb') as f:
         file = f.read()
     return file

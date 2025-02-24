@@ -196,7 +196,6 @@ def create_risk_line():
 @app.route('/modify-office', methods=['POST'])
 def modifica_office():
     data = request.json
-    print(data)
     name = data.get('name', 'pp.pptx')
     file = data.get('file', '')
     # decodifica il file in base64
