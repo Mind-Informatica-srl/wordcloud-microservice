@@ -201,10 +201,10 @@ def modifica_office():
     # decodifica il file in base64
     file = base64.b64decode(file)
 
-    replacements = data.get('replacements', [])
+    replacements = data.get('testuali', [])
     # trasformo replacements in una lista di tuple con chiave e valore
-    image_replacements = data.get('image_replacements', [])
-    replacements_for_each = data.get('replacements_for_each', [])
+    image_replacements = data.get('immagini', [])
+    replacements_for_each = data.get('ciclici', [])
 
     file_path = os.path.join(UPLOAD_FOLDER, name)
     path_save = os.path.join(UPLOAD_FOLDER, 'immagini')
