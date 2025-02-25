@@ -10,7 +10,7 @@ from python_pptx_text_replacer import TextReplacer
 
 from constants import UPLOAD_FOLDER
 from office.duplicate_and_replace_slide import duplicate_and_replace_slide
-from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
+from office.filtra_per import filtra_per
 from office.save_image import save_image
 
 
@@ -118,9 +118,11 @@ def elimina_cartella(path):
         shutil.rmtree(path)
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
+    all_replacements = copy.deepcopy(replacements)
+    all_replacements.update(image_replacements)
     changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
     ppt = Presentation(file_path)
-    filtra_per_tipo_woseq(ppt, replacements)
+    filtra_per(ppt, all_replacements)
     for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
     replace_image_in_pptx(ppt, image_replacements)
     with open(changed_presentation, 'wb') as f:

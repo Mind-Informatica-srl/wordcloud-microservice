@@ -22,6 +22,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
                 for placeholder, _ in replacements_dict.items():
                     if text == placeholder:
                         slides_to_duplicate.append((idx, placeholder))
+                        shape.text = ""  # Rimuovi il placeholder
                         break
     # dichiaro slides_to_elaborate come mappa di stringa - array di interi
     slides_to_elaborate = {}
@@ -65,7 +66,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
                         new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
             # Sostituzione testo e immagini
             for shape in new_slide.shapes:
-                if shape.shape_type == 13:  # 🔹 Sostituzione immagini
+                if shape.shape_type == 13:  # Sostituzione immagini
                     image_element = shape._element
                     alt_text = None
                     if image_element is not None:
