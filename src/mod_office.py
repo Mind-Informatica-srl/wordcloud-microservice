@@ -14,36 +14,7 @@ from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
 from office.save_image import save_image
 
 
-def replace_text_in_pptx(ppt, replacements, image_replacements):
-    # Sostituire i testi nei segnaposto
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                for para in shape.text_frame.paragraphs:
-                    for run in para.runs:
-                        words = run.text.split()
-                        new_text = []
-                        for word in words:
-                            for placeholder, text in replacements.items():
-                                if placeholder in word:
-                                    word = word.replace(placeholder, text)
-                            new_text.append(word)
-                        run.text = ' '.join(new_text)
-            elif shape.shape_type == 6:  # Gruppo di forme
-                for sub_shape in shape.shapes:
-                    if sub_shape.has_text_frame:
-                        for para in sub_shape.text_frame.paragraphs:
-                            for run in para.runs:
-                                words = run.text.split()
-                                new_text = []
-                                for word in words:
-                                    for placeholder, text in replacements.items():
-                                        if placeholder in word:
-                                            word = word.replace(placeholder, text)
-                                    new_text.append(word)
-                                run.text = ' '.join(new_text)
-
-
+def replace_text_in_pptx(ppt, image_replacements):
     # Sostituire le immagini
     for slide in ppt.slides:
         for shape in slide.shapes:
@@ -76,8 +47,6 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
                         # Rimuove l'immagine originale
                         sp = shape
                         slide.shapes._spTree.remove(sp._element)
-
-    return ppt
 
 def salva_byte_pptx(ppt):
     # Salvare il file PPTX modificato
@@ -153,6 +122,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     ppt = Presentation(file_path)
     filtra_per_tipo_woseq(ppt, replacements)
     for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
+    replace_text_in_pptx(ppt, image_replacements)
     with open(changed_presentation, 'wb') as f:
         ppt.save(f)
     replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
