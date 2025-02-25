@@ -14,7 +14,7 @@ from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
 from office.save_image import save_image
 
 
-def replace_text_in_pptx(ppt, image_replacements):
+def replace_image_in_pptx(ppt, image_replacements):
     # Sostituire le immagini
     for slide in ppt.slides:
         for shape in slide.shapes:
@@ -122,7 +122,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
     ppt = Presentation(file_path)
     filtra_per_tipo_woseq(ppt, replacements)
     for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
-    replace_text_in_pptx(ppt, image_replacements)
+    replace_image_in_pptx(ppt, image_replacements)
     with open(changed_presentation, 'wb') as f:
         ppt.save(f)
     replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
