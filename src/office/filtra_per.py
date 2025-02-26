@@ -29,7 +29,12 @@ def filtra_per(ppt, replacements):
                                 continue
 
                             if v == "*":
-                                if replacements[ph] is None or replacements[ph] == '':
+                                if ph not in replacements.keys():
+                                    rId = ppt.slides._sldIdLst[count].rId
+                                    ppt.part.drop_rel(rId)
+                                    del ppt.slides._sldIdLst[count]
+                                    rimossa = True
+                                elif replacements[ph] is None or replacements[ph] == '':
                                     rId = ppt.slides._sldIdLst[count].rId
                                     ppt.part.drop_rel(rId)
                                     del ppt.slides._sldIdLst[count]
