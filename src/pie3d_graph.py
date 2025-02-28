@@ -20,6 +20,17 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
         bytearray: L'immagine del grafico a torta tridimensionale come array di byte.
     """
 
+    if not colors or not sizes or not labels: 
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
+
     # Crea il grafico a torta tridimensionale
     plt.figure(figsize=(14, 6))
     wedges, texts = plt.pie(

@@ -16,6 +16,16 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
     Returns:
         bytearray: L'immagine della word cloud come array di byte.
     """
+    if not word_colors or not word_frequencies or not default_color: 
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
     # Funzione per applicare i colori personalizzati
     def custom_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return word_colors.get(word, default_color)

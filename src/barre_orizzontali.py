@@ -16,6 +16,17 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
 
+    if not sizes or not colors or not labels:
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
+
     # Crea il grafico a barre orizzontali
     fig, ax = plt.subplots(figsize=(14,6))
     y_pos = np.arange(len(labels))

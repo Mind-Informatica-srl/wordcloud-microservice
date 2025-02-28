@@ -16,6 +16,16 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
     :param legend_labels: Lista di stringhe, etichette della leggenda.
     :param bar_colors: Lista di stringhe, colori delle barre per i gruppi.
     """
+    if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors: 
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
 
     try:
         num_categories = len(categories)

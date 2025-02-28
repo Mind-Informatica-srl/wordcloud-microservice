@@ -72,32 +72,32 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
                 if placeholder in run.text:
                     run.text = run.text.replace(placeholder, text)
 
-    # Sostituire le immagini tramite testo alternativo
-    for shape in doc.inline_shapes:
-        if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
-            alt_text = shape._inline.docPr.get('descr')
-            for placeholder, image_path in image_replacements.items():
-                if alt_text and placeholder in alt_text:
-                    # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
-                    blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+    # # Sostituire le immagini tramite testo alternativo
+    # for shape in doc.inline_shapes:
+    #     if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
+    #         alt_text = shape._inline.docPr.get('descr')
+    #         for placeholder, image_path in image_replacements.items():
+    #             if alt_text and placeholder in alt_text:
+    #                 # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
+    #                 blip = shape._inline.graphic.graphicData.pic.blipFill.blip
 
-                    # Sostituisce l'immagine nel pacchetto ZIP del documento
-                    with open(image_path, "rb") as new_image_file:
-                        new_image_data = new_image_file.read()
+    #                 # Sostituisce l'immagine nel pacchetto ZIP del documento
+    #                 with open(image_path, "rb") as new_image_file:
+    #                     new_image_data = new_image_file.read()
 
-                    image_part = doc.part.related_parts[blip.embed]
-                    image_part._blob = new_image_data
-                    # paragraph = shape._inline.getparent().getparent()
+    #                 image_part = doc.part.related_parts[blip.embed]
+    #                 image_part._blob = new_image_data
+    #                 # paragraph = shape._inline.getparent().getparent()
 
-                    # # recupero le dimensioni dell'immagine
-                    # width = shape.width
-                    # height = shape.height
+    #                 # # recupero le dimensioni dell'immagine
+    #                 # width = shape.width
+    #                 # height = shape.height
 
-                    # p = paragraph.getparent()
-                    # p.remove(paragraph)
+    #                 # p = paragraph.getparent()
+    #                 # p.remove(paragraph)
 
-                    # new_run = doc.add_paragraph().add_run()
-                    # new_run.add_picture(image_path, width=width, height=height)
+    #                 # new_run = doc.add_paragraph().add_run()
+    #                 # new_run.add_picture(image_path, width=width, height=height)
                     
 
     # Salvare il file DOCX modificato
@@ -113,35 +113,48 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
 
     return docx_bytes
 
+
+
 def elimina_cartella(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
-    all_replacements = copy.deepcopy(replacements)
-    all_replacements.update(image_replacements)
-    changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
-    ppt = Presentation(file_path)
-    filtra_per(ppt, all_replacements)
-    for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
-    replace_image_in_pptx(ppt, image_replacements)
-    with open(changed_presentation, 'wb') as f:
-        ppt.save(f)
-    replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
-    replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
-    replacer.replace_text(replacements_t)
-    replacer.write_presentation_to_file(changed_presentation)
-    for for_type, sequences in for_indexes.items():
-        reps = replacements_for_each.get(for_type)
-        for sequence in sequences:
-            for ind, sliden in enumerate(sequence):
-                slidenstr = str(sliden+1)
-                replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
-                rep = reps[ind]['testuali']
-                rep_t = [(placeholder, text) for placeholder, text in rep.items()]
-                replacer.replace_text(rep_t)
-                replacer.write_presentation_to_file(changed_presentation)
-            
+    # Verifica il tipo di file
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".pptx":  
+        all_replacements = copy.deepcopy(replacements)
+        all_replacements.update(image_replacements)
+        changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
+        ppt = Presentation(file_path)
+        filtra_per(ppt, all_replacements)
+        for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
+        replace_image_in_pptx(ppt, image_replacements)
+        with open(changed_presentation, 'wb') as f:
+            ppt.save(f)
+        replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
+        replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
+        replacer.replace_text(replacements_t)
+        replacer.write_presentation_to_file(changed_presentation)
+        for for_type, sequences in for_indexes.items():
+            reps = replacements_for_each.get(for_type)
+            for sequence in sequences:
+                for ind, sliden in enumerate(sequence):
+                    slidenstr = str(sliden+1)
+                    replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
+                    rep = reps[ind]['testuali']
+                    rep_t = [(placeholder, text) for placeholder, text in rep.items()]
+                    replacer.replace_text(rep_t)
+                    replacer.write_presentation_to_file(changed_presentation)
+    elif ext == ".docx":
+        changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
+        docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
+        with open(changed_presentation, 'wb') as f:
+            f.write(docx_bytes)
+    else:   
+        print("Tipo di file non supportato. Supportiamo solo .pptx e .docx.")
+
     with open(changed_presentation, 'rb') as f:
         file = f.read()
     return file

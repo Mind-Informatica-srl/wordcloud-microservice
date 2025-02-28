@@ -22,6 +22,17 @@ def create_survey_chart(data, category_names, colors, format, color_labels):
     img_bytes : bytes
         L'immagine del grafico sotto forma di byte.
     """
+    if not colors or not data or not category_names or not color_labels: 
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
+
     labels = list(data.keys())
     values = np.array(list(data.values()))
     cumulative_values = values.cumsum(axis=1)

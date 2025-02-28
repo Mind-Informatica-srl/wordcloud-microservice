@@ -14,7 +14,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     :param risk_colors: Lista di stringhe, colori delle fasce di rischio.
     :param legend_labels: Lista di stringhe, etichette della leggenda delle fasce di rischio.
     """
-    if not categories or not values:
+    if not categories or not values or not risk_zones or not risk_colors or not legend_labels:
         fig, ax = plt.subplots(figsize=(14, 7))
         ax.set_axis_off()
         plt.tight_layout()

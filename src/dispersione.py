@@ -18,6 +18,16 @@ labels = [
     "Scarsa chiarezza dei ruoli", "Valutazione"
 ]
 def generate_dispersione(x, y, labels, format):
+    if not x or not y or not labels: 
+        fig, ax = plt.subplots(figsize=(14, 7))
+        ax.set_axis_off()
+        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
+        plt.tight_layout()
+        byte_io = io.BytesIO()
+        plt.savefig(byte_io, format=format)
+        plt.close()
+        byte_io.seek(0)
+        return byte_io.read()
     # Creazione del grafico
     fig, ax = plt.subplots(figsize=(14, 7))
 
