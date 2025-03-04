@@ -1,6 +1,6 @@
 import copy
 import io
-import uuid
+import re
 
 from office.save_image import save_image
 
@@ -16,8 +16,17 @@ def print_slide_names(ppt):
         rel_name = rel_part.partname
         print(f"Relationship name: {rel_name}")
 
+def extract_placeholder_info(text):
+    """
+    Estrae il placeholder {{for_go:n}} dal testo e restituisce n come intero.
+    """
+    match = re.search(r"{{for_go:(\d+)}}", text)
+    if match:
+        return int(match.group(1))
+    return None
 
-def duplicate_and_replace_slide(ppt, replacements_dict):
+
+def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
     """
     Duplica una slide e applica le sostituzioni di testo e immagine per ogni elemento in replacements_dict.
     
@@ -39,21 +48,35 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
             if shape.has_text_frame:
                 text = shape.text.strip()
                 for placeholder, _ in replacements_dict.items():
-                    if text == placeholder:
-                        slides_to_duplicate.append((idx, placeholder))
-                        shape.text = ""  # Rimuovi il placeholder
-                        break
+                    if placeholder == "{{for_fg}}":
+                        if text == placeholder:
+                            slides_to_duplicate.append((idx, 1, placeholder))
+                            shape.text = ""  # Rimuovi il placeholder
+                            break
+                        else:
+                            n = extract_placeholder_info(text)
+                            if n is not None:
+                                slides_to_duplicate.append((idx, n, "{{for_go:n}}"))
+                                shape.text = ""
+                                break
     # dichiaro slides_to_elaborate come mappa di stringa - array di interi
     slides_to_elaborate = {}
     # Duplica e modifica le slide
-    for slide_idx, forplaceholder in slides_to_duplicate:
+    for slide_idx, num_duplicates, forplaceholder in slides_to_duplicate:
         if slides_to_elaborate.get(forplaceholder) is None:
             slides_to_elaborate[forplaceholder] = []
         ids = [slide_idx]
         slide_to_copy = ppt.slides[slide_idx]
         elements = replacements_dict[forplaceholder]    
 
-        for idx, element in enumerate(elements):
+        # recupero il numero di focus group e il numero di di gruppi omogenei per capire quante slide dovrò replicare
+        num_replace = 0
+        if forplaceholder == "{{for_fg}}":
+            num_replace = -(-int(num_fg) // num_duplicates)  # Arrotonda per eccesso
+        elif forplaceholder == "{{for_go:n}}":
+            num_replace = -(-int(num_go) // num_duplicates)
+
+        for idx in range(num_replace):
             if idx == 0:
                 new_slide = slide_to_copy
             else:
