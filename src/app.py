@@ -22,6 +22,7 @@ mime_types = {
         "png": "image/png",
         "jpg": "image/jpeg",
         "svg": "image/svg+xml",
+        "SVG": "image/svg+xml",
         "pdf": "application/pdf",
         "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -186,9 +187,10 @@ def create_risk_line():
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
     format = data.get('format', 'png')
+    is_white = data.get('is_white', False)
 
     try:
-        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format)
+        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500

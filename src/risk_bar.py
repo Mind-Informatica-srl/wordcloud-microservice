@@ -3,6 +3,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import numpy as np
+from PIL import Image
+import svgwrite
 
 def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format):
     """
@@ -16,16 +18,21 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
     :param legend_labels: Lista di stringhe, etichette della leggenda.
     :param bar_colors: Lista di stringhe, colori delle barre per i gruppi.
     """
-    if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors: 
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.set_axis_off()
-        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
-        plt.tight_layout()
-        byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format)
-        plt.close()
-        byte_io.seek(0)
-        return byte_io.read()
+    if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors or len(values) == 0 or all(value == 0 for value in values): 
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            dwg.write(byte_io)
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (800, 600), color='white')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
 
     try:
         num_categories = len(categories)

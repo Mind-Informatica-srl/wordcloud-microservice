@@ -5,6 +5,8 @@ from adjustText import adjust_text
 import io
 import textwrap
 import matplotlib.patches as patches
+from PIL import Image
+import svgwrite
 
 # Dati
 x = [1, 2, 1.5, 3, 2.5, 4, 4.5, 5, 2, 1, 1.2, 3.8, 4.2, 1.3, 0.8]  # Importanza
@@ -18,16 +20,23 @@ labels = [
     "Scarsa chiarezza dei ruoli", "Valutazione"
 ]
 def generate_dispersione(x, y, labels, format):
-    if not x or not y or not labels: 
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.set_axis_off()
-        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
-        plt.tight_layout()
-        byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format)
-        plt.close()
-        byte_io.seek(0)
-        return byte_io.read()
+    if not x or not y or not labels or len(x) != len(y) or len(x) != len(labels) or len(y) != len(labels) or all(value == 0 for value in x) or all(value == 0 for value in y) or x is None or y is None or labels is None: 
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            dwg.write(byte_io)
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (800, 600), color='white')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
+    
     # Creazione del grafico
     fig, ax = plt.subplots(figsize=(14, 7))
 

@@ -3,6 +3,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import numpy as np
+from PIL import Image
+import svgwrite
 def generate_barre_orizzontali(colors, labels, sizes, format):
     """
     Genera un grafico a barre orizzontali con colori personalizzati e restituisce l'immagine come array di byte.
@@ -16,16 +18,22 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
 
-    if not sizes or not colors or not labels:
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.set_axis_off()
-        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
-        plt.tight_layout()
-        byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format)
-        plt.close()
-        byte_io.seek(0)
-        return byte_io.read()
+    if not sizes or not colors or not labels or sizes.count(0) == len(sizes) or sizes is None or colors is None or labels is None:
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            dwg.write(byte_io)
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (800, 600), color='white')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
 
     # Crea il grafico a barre orizzontali
     fig, ax = plt.subplots(figsize=(14,6))

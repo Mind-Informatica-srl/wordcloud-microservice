@@ -2,16 +2,14 @@ import copy
 from pptx import Presentation
 import docx
 import os
-import requests
 import shutil
-import io
-import re
 from python_pptx_text_replacer import TextReplacer
 
 from constants import UPLOAD_FOLDER
 from office.duplicate_and_replace_slide import duplicate_and_replace_slide
 from office.filtra_per import filtra_per
 from office.save_image import save_image
+import zipfile
 
 
 def replace_image_in_pptx(ppt, image_replacements):
@@ -112,8 +110,6 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
         docx_bytes = f.read()
 
     return docx_bytes
-
-
 
 def elimina_cartella(path):
     if os.path.exists(path):

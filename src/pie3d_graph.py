@@ -3,6 +3,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import io
+from PIL import Image
+import svgwrite
 
 
 def generate_pie3d(colors, labels, sizes, explode, title, format):
@@ -20,16 +22,22 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
         bytearray: L'immagine del grafico a torta tridimensionale come array di byte.
     """
 
-    if not colors or not sizes or not labels: 
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.set_axis_off()
-        ax.text(0.5, 0.5, 'Dati Mancanti', horizontalalignment='center', verticalalignment='center', fontsize=20, color='red', transform=ax.transAxes)
-        plt.tight_layout()
-        byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format)
-        plt.close()
-        byte_io.seek(0)
-        return byte_io.read()
+    if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            dwg.write(byte_io, pretty=True)
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (800, 600), color='white')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
 
     # Crea il grafico a torta tridimensionale
     plt.figure(figsize=(14, 6))

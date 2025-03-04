@@ -3,8 +3,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import numpy as np
+from PIL import Image
+import svgwrite
 
-def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format):
+def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white):
     """
     Crea un grafico a linea con fasce di rischio sullo sfondo.
 
@@ -14,15 +16,22 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     :param risk_colors: Lista di stringhe, colori delle fasce di rischio.
     :param legend_labels: Lista di stringhe, etichette della leggenda delle fasce di rischio.
     """
-    if not categories or not values or not risk_zones or not risk_colors or not legend_labels:
-        fig, ax = plt.subplots(figsize=(14, 7))
-        ax.set_axis_off()
-        plt.tight_layout()
-        byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format)
-        plt.close()
-        byte_io.seek(0)
-        return byte_io.read()
+    if not categories or not values or not risk_zones or not risk_colors or not legend_labels or len(values) == 0 or all(value == 0 for value in values) or is_white:
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            dwg.write(byte_io)
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (800, 600), color='white')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
     
     x_positions = np.arange(len(categories))
     fig, ax = plt.subplots(figsize=(14, 7))

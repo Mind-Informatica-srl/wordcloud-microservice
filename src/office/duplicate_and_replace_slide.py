@@ -1,7 +1,20 @@
 import copy
 import io
+import uuid
 
 from office.save_image import save_image
+
+def print_slide_names(ppt):
+    # Stampa i nomi delle slide
+    for idx, slide in enumerate(ppt.slides):
+        slide_name = f"slide{idx + 1}.xml"
+        print(f"Slide name: {slide_name}")
+
+    # Stampa i nomi delle relazioni
+    for rel in ppt.part.rels:
+        rel_part = ppt.part.rels[rel].target_part
+        rel_name = rel_part.partname
+        print(f"Relationship name: {rel_name}")
 
 
 def duplicate_and_replace_slide(ppt, replacements_dict):
@@ -12,6 +25,12 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
     :param slide_index: Indice della slide da duplicare
     :param replacements_dict: Dizionario con le sostituzioni di testo e immagine per ogni placeholder
     """
+
+    # Stampa le slide
+    print_slide_names(ppt)
+
+    print(ppt.slides._sldIdLst)
+
     
     # Trova le slide con i placeholder
     slides_to_duplicate = []
@@ -86,4 +105,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict):
             idsList = []
         idsList.append(ids)
         slides_to_elaborate[forplaceholder] = idsList
+
+        print_slide_names(ppt)
+
     return slides_to_elaborate
