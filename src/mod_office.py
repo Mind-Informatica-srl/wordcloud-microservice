@@ -124,8 +124,8 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         all_replacements.update(image_replacements)
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
         ppt = Presentation(file_path)
-        filtra_per(ppt, all_replacements)
         for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each, replacements["{{numero_fg}}"], replacements["{{numero_go}}"])
+        filtra_per(ppt, all_replacements)
         replace_image_in_pptx(ppt, image_replacements)
         with open(changed_presentation, 'wb') as f:
             ppt.save(f)

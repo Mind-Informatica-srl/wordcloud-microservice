@@ -11,6 +11,7 @@ from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
 from distribuzione import create_survey_chart
 from mod_office import process_file, elimina_cartella
+from generate_list import generate_list
 import io
 import os
 from PIL import Image
@@ -43,6 +44,19 @@ def create_wordcloud():
     try:
         image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/create_list', methods=['POST'])
+def create_list():
+    data = request.json
+    print(data)
+    items = data.get('items', [])
+    format = data.get('format', 'png')
+
+    try:
+        image_bytes = generate_list(items, format)
+        return send_file(image_bytes, mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     

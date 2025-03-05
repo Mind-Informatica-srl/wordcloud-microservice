@@ -18,11 +18,11 @@ def print_slide_names(ppt):
 
 def extract_placeholder_info(text):
     """
-    Estrae il placeholder {{for_go:n}} dal testo e restituisce n come intero.
+    Estrae il placeholder  dal testo e restituisce n come intero.
     """
-    match = re.search(r"{{for_go:(\d+)}}", text)
+    match = re.search(r"{{([^:]+):(\d+)}}", text)
     if match:
-        return int(match.group(1))
+        return "{{"+match.group(1)+":n}}", "{{"+match.group(1)+"}}", int(match.group(2))
     return None
 
 
@@ -48,17 +48,13 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
             if shape.has_text_frame:
                 text = shape.text.strip()
                 for placeholder, _ in replacements_dict.items():
-                    if placeholder == "{{for_fg}}":
-                        if text == placeholder:
-                            slides_to_duplicate.append((idx, 1, placeholder))
-                            shape.text = ""  # Rimuovi il placeholder
+                    n = extract_placeholder_info(text)
+                    if n is not None:
+                        if n[0] == placeholder:
+                            slides_to_duplicate.append((idx, n[2], n[0]))
+                            shape.text = ""
                             break
-                        else:
-                            n = extract_placeholder_info(text)
-                            if n is not None:
-                                slides_to_duplicate.append((idx, n, "{{for_go:n}}"))
-                                shape.text = ""
-                                break
+    
     # dichiaro slides_to_elaborate come mappa di stringa - array di interi
     slides_to_elaborate = {}
     # Duplica e modifica le slide
@@ -67,11 +63,13 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
             slides_to_elaborate[forplaceholder] = []
         ids = [slide_idx]
         slide_to_copy = ppt.slides[slide_idx]
-        elements = replacements_dict[forplaceholder]    
+        elements = replacements_dict[forplaceholder]  
+
+        slide_copy = copy.deepcopy(slide_to_copy)  
 
         # recupero il numero di focus group e il numero di di gruppi omogenei per capire quante slide dovrò replicare
         num_replace = 0
-        if forplaceholder == "{{for_fg}}":
+        if forplaceholder == "{{for_fg:n}}":
             num_replace = -(-int(num_fg) // num_duplicates)  # Arrotonda per eccesso
         elif forplaceholder == "{{for_go:n}}":
             num_replace = -(-int(num_go) // num_duplicates)
@@ -80,6 +78,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
             if idx == 0:
                 new_slide = slide_to_copy
             else:
+                new_slide = None
                 new_slide = ppt.slides.add_slide(ppt.slide_layouts[6])  # Duplica la slide
 
                 # Inserisci la nuova slide nella stessa posizione della slide originale
@@ -90,7 +89,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                 ids.append(newindex)
 
                 # Copia gli elementi della slide originale nella nuova slide
-                for shape in slide_to_copy.shapes:
+                for shape in slide_copy.shapes:
                     if shape.shape_type == 13:  # Immagine
                         image_stream = io.BytesIO(shape.image.blob)
                         new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
@@ -106,6 +105,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                         el = shape.element
                         new_shape = copy.deepcopy(el)
                         new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
+
             # Sostituzione testo e immagini
             for shape in new_slide.shapes:
                 if shape.shape_type == 13:  # Sostituzione immagini
@@ -116,13 +116,27 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                         if cNvPr is not None:
                             alt_text = cNvPr.get('descr')
 
-                    for placeholder, image_path in element["immagini"].items():
-                        if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in alt_text):
-                            img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
-                            left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                            new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
-                            sp = shape
-                            new_slide.shapes._spTree.remove(sp._element)
+                    # controllo se il placeholder è della forma {{testo:n}}
+                    if alt_text is not None:
+                        t = extract_placeholder_info(alt_text)
+                        if t is not None:
+                        # n del placeholder (index_slide)
+                        # recupero e ricreo il placeholder (placeholder_slide)
+                            placeholder_slide = t[1]
+                            index_slide = t[2]
+
+                            # recupero l'indice del placeholder
+                            index = (index_slide - 1) + (idx * num_duplicates)
+                            element = elements[index]
+
+                            for placeholder, image_path in element["immagini"].items():
+                                if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
+                                    img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
+                                    left, top, width, height = shape.left, shape.top, shape.width, shape.height
+                                    new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
+                                    sp = shape
+                                    new_slide.shapes._spTree.remove(sp._element)
+
         idsList = slides_to_elaborate.get(forplaceholder)
         if idsList is None:
             idsList = []
