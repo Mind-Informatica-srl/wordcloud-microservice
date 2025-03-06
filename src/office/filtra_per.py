@@ -45,6 +45,14 @@ def filtra_per(ppt, replacements):
                                         rimossa = True
                                     elif replacements[ph] is not None and replacements[ph] != '':
                                         para.text = para.text.replace("{{if:" + condition + "}}", "")
+                                elif v == "":
+                                    if ph in replacements.keys() and replacements[ph] == '':
+                                        rId = ppt.slides._sldIdLst[count].rId
+                                        ppt.part.drop_rel(rId)
+                                        del ppt.slides._sldIdLst[count]
+                                        rimossa = True
+                                    elif ph not in replacements.keys():
+                                        para.text = para.text.replace("{{if:" + condition + "}}", "")
                                 else:
                                     if replacements[ph] != v:
                                         rId = ppt.slides._sldIdLst[count].rId
