@@ -136,6 +136,10 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                                     new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
                                     sp = shape
                                     new_slide.shapes._spTree.remove(sp._element)
+                                else:
+                                    # rimuovo l'immagine
+                                    sp = shape
+                                    new_slide.shapes._spTree.remove(sp._element)
 
         idsList = slides_to_elaborate.get(forplaceholder)
         if idsList is None:
