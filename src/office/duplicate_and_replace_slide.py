@@ -58,9 +58,11 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
     # dichiaro slides_to_elaborate come mappa di stringa - array di interi
     slides_to_elaborate = {}
     # Duplica e modifica le slide
+    if not slides_to_duplicate or len(slides_to_duplicate) == 0:
+        return slides_to_elaborate
     for slide_idx, num_duplicates, forplaceholder in slides_to_duplicate:
         if slides_to_elaborate.get(forplaceholder) is None:
-            slides_to_elaborate[forplaceholder] = []
+            slides_to_elaborate[forplaceholder] = {"num_duplicates": 0, "ids": []}
         ids = [slide_idx]
         slide_to_copy = ppt.slides[slide_idx]
         elements = replacements_dict[forplaceholder]  
@@ -78,33 +80,36 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
             if idx == 0:
                 new_slide = slide_to_copy
             else:
-                new_slide = None
-                new_slide = ppt.slides.add_slide(ppt.slide_layouts[6])  # Duplica la slide
+                try:
+                    new_slide = ppt.slides.add_slide(ppt.slide_layouts[6])  # Duplica la slide
 
-                # Inserisci la nuova slide nella stessa posizione della slide originale
-                slide_id = ppt.slides._sldIdLst[-1]
-                ppt.slides._sldIdLst.remove(slide_id)
-                newindex = slide_idx + idx
-                ppt.slides._sldIdLst.insert(newindex, slide_id)
-                ids.append(newindex)
+                    # Inserisci la nuova slide nella stessa posizione della slide originale
+                    slide_id = ppt.slides._sldIdLst[-1]
+                    ppt.slides._sldIdLst.remove(slide_id)
+                    newindex = slide_idx + idx
+                    ppt.slides._sldIdLst.insert(newindex, slide_id)
+                    ids.append(newindex)
 
-                # Copia gli elementi della slide originale nella nuova slide
-                for shape in slide_copy.shapes:
-                    if shape.shape_type == 13:  # Immagine
-                        image_stream = io.BytesIO(shape.image.blob)
-                        new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
-                        # Copia il testo alternativo
-                        image_element = shape._element
-                        if image_element is not None:
-                            cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                            if cNvPr is not None:
-                                alt_text = cNvPr.get('descr')
-                                if alt_text is not None:
-                                    new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
-                    else:
-                        el = shape.element
-                        new_shape = copy.deepcopy(el)
-                        new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
+                    # Copia gli elementi della slide originale nella nuova slide
+                    for shape in slide_copy.shapes:
+                        if shape.shape_type == 13:  # Immagine
+                            image_stream = io.BytesIO(shape.image.blob)
+                            new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
+                            # Copia il testo alternativo
+                            image_element = shape._element
+                            if image_element is not None:
+                                cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
+                                if cNvPr is not None:
+                                    alt_text = cNvPr.get('descr')
+                                    if alt_text is not None:
+                                        new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
+                        else:
+                            el = shape.element
+                            new_shape = copy.deepcopy(el)
+                            new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
+                except Exception as e:
+                    print(f"Errore durante la duplicazione della slide: {e}")
+                    continue
 
             # Sostituzione testo e immagini
             for shape in new_slide.shapes:
@@ -136,16 +141,9 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                                     new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
                                     sp = shape
                                     new_slide.shapes._spTree.remove(sp._element)
-                                else:
-                                    # rimuovo l'immagine
-                                    sp = shape
-                                    new_slide.shapes._spTree.remove(sp._element)
 
-        idsList = slides_to_elaborate.get(forplaceholder)
-        if idsList is None:
-            idsList = []
-        idsList.append(ids)
-        slides_to_elaborate[forplaceholder] = idsList
+        slides_to_elaborate[forplaceholder]["num_duplicates"] = num_replace
+        slides_to_elaborate[forplaceholder]["ids"].append(ids)
 
         print_slide_names(ppt)
 
