@@ -170,7 +170,8 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
 
         ppt = Presentation(changed_presentation)
         filtra_per(ppt, all_replacements)
-        replacer.write_presentation_to_file(changed_presentation)
+        # Salva il file PPTX modificato
+        ppt.save(changed_presentation)
     elif ext == ".docx":
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
         docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
