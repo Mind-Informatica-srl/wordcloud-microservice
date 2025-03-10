@@ -169,14 +169,15 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
                             continue
                         for i in range(num_replace):
                             index = i + (ind * num_replace)
-                            rep = reps[index]['testuali']
-                            rep_cambiato = {}
-                            for key, value in rep.items():
-                                k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
-                                rep_cambiato[k] = value
-                            rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
-                            replacer.replace_text(rep_t)
-                            replacer.write_presentation_to_file(changed_presentation)
+                            if index < len(reps):
+                                rep = reps[index]['testuali']
+                                rep_cambiato = {}
+                                for key, value in rep.items():
+                                    k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
+                                    rep_cambiato[k] = value
+                                rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
+                                replacer.replace_text(rep_t)
+                                replacer.write_presentation_to_file(changed_presentation)
     elif ext == ".docx":
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
         docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)

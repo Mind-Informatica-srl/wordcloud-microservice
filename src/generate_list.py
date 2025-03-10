@@ -4,6 +4,17 @@ import math
 
 
 def generate_list(items, format):
+    # controllo se la lista è vuota
+    if not items or len(items) == 0:
+        img = Image.new("RGB", (800, 50), "white")
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format=format)
+        img_byte_arr.seek(0)
+        return img_byte_arr
+
+        
     # Divide items into two columns
     mid_index = math.ceil(len(items) / 2)
     left_items = items[:mid_index]

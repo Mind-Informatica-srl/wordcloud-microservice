@@ -132,17 +132,18 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
 
                             # recupero l'indice del placeholder
                             index = (index_slide - 1) + (idx * num_duplicates)
-                            element = elements[index]
+                            if index < len(elements):
+                                element = elements[index]
 
-                            for placeholder, image_path in element["immagini"].items():
-                                if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
-                                    img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
-                                    left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                                    new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
-                                    sp = shape
-                                    new_slide.shapes._spTree.remove(sp._element)
+                                for placeholder, image_path in element["immagini"].items():
+                                    if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
+                                        img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
+                                        left, top, width, height = shape.left, shape.top, shape.width, shape.height
+                                        new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
+                                        sp = shape
+                                        new_slide.shapes._spTree.remove(sp._element)
 
-        slides_to_elaborate[forplaceholder]["num_duplicates"] = num_replace
+        slides_to_elaborate[forplaceholder]["num_duplicates"] = num_duplicates
         slides_to_elaborate[forplaceholder]["ids"].append(ids)
 
         print_slide_names(ppt)
