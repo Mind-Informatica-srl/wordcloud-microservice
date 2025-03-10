@@ -124,24 +124,13 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         all_replacements.update(image_replacements)
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
         ppt = Presentation(file_path)
-        filtra_per(ppt, all_replacements)
+        # filtra_per(ppt, all_replacements)
         for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each, replacements["{{numero_fg}}"], replacements["{{numero_go}}"])
         replace_image_in_pptx(ppt, image_replacements)
         with open(changed_presentation, 'wb') as f:
             ppt.save(f)
         replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
         replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
-        # Stampa i nomi delle slide
-        for idx, slide in enumerate(ppt.slides):
-            slide_name = f"slide{idx + 1}.xml"
-            print(f"Slide name: {slide_name}")
-
-        # Stampa i nomi delle relazioni
-        for rel in ppt.part.rels:
-            rel_part = ppt.part.rels[rel].target_part
-            rel_name = rel_part.partname
-            print(f"Relationship name: {rel_name}" + "- rID:" + rel)
-
         try:
             replacer.replace_text(replacements_t)
         except KeyError as e:
@@ -178,6 +167,10 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
                                 rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
                                 replacer.replace_text(rep_t)
                                 replacer.write_presentation_to_file(changed_presentation)
+
+        ppt = Presentation(changed_presentation)
+        filtra_per(ppt, all_replacements)
+        replacer.write_presentation_to_file(changed_presentation)
     elif ext == ".docx":
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
         docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
