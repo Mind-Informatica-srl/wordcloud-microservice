@@ -56,3 +56,42 @@ def generate_list(items, format):
     img_byte_arr.seek(0)
     
     return img_byte_arr
+
+def generate_fonti_list(items, format):
+    # controllo se la lista è vuota
+    if not items or len(items) == 0:
+        img = Image.new("RGB", (800, 50), "white")
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format=format)
+        img_byte_arr.seek(0)
+        return img_byte_arr
+
+    # Generate list image
+    width, height = 800, 50 + len(items) * 30  # Dimensioni dinamiche in base alla lista
+    img = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(img)
+
+    # Percorso del font Avenir (modifica se necessario)
+    font_path = "fonts/Figtree-VariableFont_wght.ttf"
+    
+    try:
+        font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
+    except IOError:
+        font = ImageFont.load_default()  # Usa font di default se non trovato
+        print("Font Avenir non trovato, usando font di default.")
+
+    y = 20
+    for item in items:
+        k = item['Key']
+        v = item['Value']
+        draw.text((20, y), f"{k}", fill="black", font=font)
+        y += 30
+
+    # Salva l'immagine in un buffer di memoria
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format=format)
+    img_byte_arr.seek(0)
+    
+    return img_byte_arr

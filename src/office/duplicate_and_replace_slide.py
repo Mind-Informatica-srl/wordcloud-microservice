@@ -34,16 +34,13 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
     :param slide_index: Indice della slide da duplicare
     :param replacements_dict: Dizionario con le sostituzioni di testo e immagine per ogni placeholder
     """
-
-    # Stampa le slide
-    print_slide_names(ppt)
-
-    print(ppt.slides._sldIdLst)
-
     
     # Trova le slide con i placeholder
     slides_to_duplicate = []
+    found = False
     for idx, slide in enumerate(ppt.slides):
+        if found:
+            break
         for shape in slide.shapes:
             if shape.has_text_frame:
                 text = shape.text.strip()
@@ -53,16 +50,19 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                         if n[0] == placeholder:
                             slides_to_duplicate.append((idx, n[2], n[0]))
                             shape.text = ""
+                            found = True
                             break
+                if found:
+                    break
     
     # dichiaro slides_to_elaborate come mappa di stringa - array di interi
-    slides_to_elaborate = {}
+    slides_to_elaborate = []
     # Duplica e modifica le slide
-    if not slides_to_duplicate or len(slides_to_duplicate) == 0:
+    if not slides_to_duplicate or len(slides_to_duplicate) == 0: 
         return slides_to_elaborate
     for slide_idx, num_duplicates, forplaceholder in slides_to_duplicate:
-        if slides_to_elaborate.get(forplaceholder) is None:
-            slides_to_elaborate[forplaceholder] = {"num_duplicates": 0, "ids": []}
+        # if slides_to_elaborate.get(forplaceholder) is None:
+        #     slides_to_elaborate[forplaceholder] = {"num_duplicates": 0, "ids": []}
         ids = [slide_idx]
         slide_to_copy = ppt.slides[slide_idx]
         elements = replacements_dict[forplaceholder]  
@@ -143,9 +143,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                                         sp = shape
                                         new_slide.shapes._spTree.remove(sp._element)
 
-        slides_to_elaborate[forplaceholder]["num_duplicates"] = num_duplicates
-        slides_to_elaborate[forplaceholder]["ids"].append(ids)
-
-        print_slide_names(ppt)
+        slides_to_elaborate.append((forplaceholder, num_duplicates, ids))
+        slides_to_elaborate.extend(duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go))
 
     return slides_to_elaborate

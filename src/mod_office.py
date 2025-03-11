@@ -146,27 +146,33 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         #             rep_t = [(placeholder, text) for placeholder, text in rep.items()]
         #             replacer.replace_text(rep_t)
         #             replacer.write_presentation_to_file(changed_presentation)
-        for for_type, sequences in for_indexes.items():
+        for for_type, num_replace, sequences in for_indexes:
             reps = replacements_for_each.get(for_type)
-            num_replace = sequences["num_duplicates"]
-            seq = sequences["ids"]
-            for sequence in seq:
-                    for ind, sliden in enumerate(sequence):
-                        slidenstr = str(sliden+1)
-                        replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
-                        if reps is None or ind >= len(reps):
-                            continue
-                        for i in range(num_replace):
-                            index = i + (ind * num_replace)
-                            if index < len(reps):
-                                rep = reps[index]['testuali']
-                                rep_cambiato = {}
-                                for key, value in rep.items():
-                                    k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
-                                    rep_cambiato[k] = value
-                                rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
-                                replacer.replace_text(rep_t)
-                                replacer.write_presentation_to_file(changed_presentation)
+            for ind, sliden in enumerate(sequences):
+                slidenstr = str(sliden+1)
+                replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
+                if reps is None or ind >= len(reps) or len(reps) == 0:
+                    continue
+                for i in range(num_replace):
+                    index = i + (ind * num_replace)
+                    if index < len(reps):
+                        rep = reps[index]['testuali']
+                        rep_cambiato = {}
+                        for key, value in rep.items():
+                            k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
+                            rep_cambiato[k] = value
+                        rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
+                        replacer.replace_text(rep_t)
+                    else:
+                        rep = reps[0]['testuali']
+                        rep_cambiato = {}
+                        for key, value in rep.items():
+                            k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
+                            rep_cambiato[k] = ""
+                        rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
+                        replacer.replace_text(rep_t)
+
+                    replacer.write_presentation_to_file(changed_presentation)
 
         ppt = Presentation(changed_presentation)
         filtra_per(ppt, all_replacements)
