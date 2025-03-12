@@ -5,7 +5,7 @@ from adjustText import adjust_text
 import io
 import textwrap
 import matplotlib.patches as patches
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
 # Dati
@@ -32,6 +32,14 @@ def generate_dispersione(x, y, labels, format):
             return byte_io.read()
         else:
             img = Image.new('RGB', (800, 600), color='white')
+            font_path = "fonts/Figtree-VariableFont_wght.ttf"
+            try:
+                font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
+            except IOError:
+                font = ImageFont.load_default()  # Usa font di default se non trovato
+
+            draw = ImageDraw.Draw(img)
+            draw.text((400, 300), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
             byte_io = io.BytesIO()
             img.save(byte_io, format=format)
             byte_io.seek(0)
