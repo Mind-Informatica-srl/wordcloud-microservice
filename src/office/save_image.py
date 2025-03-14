@@ -15,6 +15,8 @@ def save_image(key, url, image_path):
     }
 
     url = os.getenv("BASE_URL") + url
+    print(f"Sto per chiamare '{url}'")
+
     response = requests.get(url)
     if response.status_code == 200:
         image = response.content
