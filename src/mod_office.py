@@ -152,7 +152,12 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
                 slidenstr = str(sliden+1)
                 replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
                 if reps is None or ind >= len(reps) or len(reps) == 0:
-                    continue
+                    if for_type == "{{for_go:n}}":
+                        reps = [{"testuali": {"{{gruppo_omogeneo_testuale_nome}}": "", "{{go_partecipanti}}": "", "{{go_adesione}}": "", "{{gruppo_omogeneo_rischio}}": ""}}]
+                    elif for_type == "{{for_fg:n}}":
+                        reps = [{"testuali": {"{{nome_fg}}": "", }}]
+                    else:
+                        continue
                 for i in range(num_replace):
                     index = i + (ind * num_replace)
                     if index < len(reps):
