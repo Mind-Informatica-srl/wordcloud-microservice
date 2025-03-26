@@ -46,7 +46,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
     # Crea il grafico a barre orizzontali
     fig, ax = plt.subplots(figsize=(14,6))
     y_pos = np.arange(len(labels))
-    bar_height = 0.2  # Altezza delle barre
+    bar_height = 0.4  # Altezza delle barre
     ax.barh(y_pos, sizes, color=colors, edgecolor=None, height=bar_height)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels, fontsize=10, fontweight='bold')
