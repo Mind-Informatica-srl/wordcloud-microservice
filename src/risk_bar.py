@@ -55,6 +55,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
         # Definizione delle posizioni per le barre
         y_positions = np.arange(num_categories)
+        
         group_patches = []
         for i, group in enumerate(groups):
             bar = ax.barh(
@@ -68,12 +69,12 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
-                ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black')
+                ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold')
 
 
         # Configura assi e legenda
         ax.set_yticks(y_positions + bar_height * (len(groups) - 1) / 2)
-        ax.set_yticklabels(categories)
+        ax.set_yticklabels(categories, fontsize=10, fontweight='bold')
         # Prima legenda per le fasce di rischio
         risk_legend = ax.legend(
             handles=risk_patches, 
@@ -90,7 +91,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         bar_colors_used = [bar_colors[groups.index(group)] for group in groups]
         group_legend = ax.legend(
             handles=[plt.Line2D([0], [0], color=color, lw=4) for color in reversed(bar_colors_used)], 
-            labels=list(reversed(groups)),  # Usa groups per le etichette della legenda in ordine inverso
+            labels=list(groups),  # Usa groups per le etichette della legenda in ordine inverso
             loc="center left", 
             bbox_to_anchor=(1, 0.5), 
             frameon=False  # Rimuovi il bordo

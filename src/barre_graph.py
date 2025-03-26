@@ -57,7 +57,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold')
         left += normalized_sizes[i]
 
     # Personalizzazioni
@@ -151,7 +151,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=1, fontweight='bold')
         left += normalized_sizes[i]
 
     # Personalizzazioni

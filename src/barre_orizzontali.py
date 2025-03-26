@@ -49,7 +49,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
     bar_height = 0.2  # Altezza delle barre
     ax.barh(y_pos, sizes, color=colors, edgecolor=None, height=bar_height)
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(labels, fontsize=10)
+    ax.set_yticklabels(labels, fontsize=10, fontweight='bold')
 
     # Imposta il limite massimo dell'asse delle ascisse a 100
     ax.set_xlim(0, 100)
@@ -60,7 +60,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
     # Aggiungi le etichette ai bar
     for i, v in enumerate(sizes):
         v = round(v)
-        ax.text(v + 0.1, i, f"{v}%", color='black', va='center', fontsize=10)
+        ax.text(v + 0.1, i, f"{v}%", color='black', va='center', fontsize=10, fontweight='bold')
 
     # Riduci lo spazio tra le barre
     ax.set_ylim(-0.5, len(labels) - 0.5)

@@ -61,6 +61,10 @@ def create_survey_chart(data, category_names, colors, format, color_labels):
     # Aggiungi il simbolo delle percentuali all'asse delle ascisse
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}%'))
 
+    # Imposta le etichette sull'asse delle y in grassetto
+    ax.set_yticklabels(labels, fontweight='bold')
+
+
     for i, (category, color) in enumerate(zip(category_names, colors)):
         widths = values[:, i]
         starts = cumulative_values[:, i] - widths
@@ -68,10 +72,10 @@ def create_survey_chart(data, category_names, colors, format, color_labels):
                         label="Stress " + category, color=color)
 
         # Aggiungi etichette al centro di ogni barra
-        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=10)
+        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=10, fontweight='bold')
 
     ax.legend(ncol=len(category_names), bbox_to_anchor=(0.5, -0.2),
-              loc='upper center', fontsize='small')
+              loc='upper center', fontsize='small', frameon=False)
     
     
     # Rimuovi il bordo esterno del grafico

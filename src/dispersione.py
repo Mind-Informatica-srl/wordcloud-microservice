@@ -69,7 +69,7 @@ def generate_dispersione(x, y, labels, format):
         else:
             alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
         
-        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=8, **alignment))
+        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=8, fontweight='bold', **alignment))
 
 
     # Se nell'intorno del punto ci sono altre etichette, le sposta per evitare sovrapposizioni
@@ -104,8 +104,8 @@ def generate_dispersione(x, y, labels, format):
     # Personalizzazioni
     ax.set_xlim(0, 102)
     ax.set_ylim(0, 102)
-    ax.set_xlabel("IMPORTANZA", fontsize=12, labelpad=10)
-    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=12, labelpad=10)
+    ax.set_xlabel("IMPORTANZA", fontsize=12, labelpad=10, fontweight='bold')
+    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=12, labelpad=10, fontweight='bold')
     ax.spines['top'].set_color('green')
     ax.spines['right'].set_color('green')
     ax.spines['left'].set_color('green')

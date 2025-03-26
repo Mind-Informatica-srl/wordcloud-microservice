@@ -63,6 +63,7 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
 
     # Imposta il colore delle etichette e aggiungi le percentuali sotto le etichette
     for text, percentage, color in zip(texts, percentages, colors):
+        text.set_fontweight('bold')
         if percentage != '0.00%':
             text.set_color(color)
             text.set_fontsize(10)
