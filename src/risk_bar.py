@@ -55,6 +55,13 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
         # Definizione delle posizioni per le barre
         y_positions = np.arange(num_categories)
+
+        bar_col = []
+        for i in range(len(groups)):
+            bar_col.append(bar_colors[i])
+
+        bc = reversed(bar_col)
+        bc = list(bc)
         
         group_patches = []
         for i, group in enumerate(groups):
@@ -63,7 +70,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
                 [val[i] for val in values],
                 height=bar_height,
                 label=group,
-                color=bar_colors[i]
+                color=bc[i]
             )
             group_patches.append(bar)
 
@@ -88,7 +95,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         ax.add_artist(risk_legend)
 
         # Seconda legenda per i gruppi
-        bar_colors_used = [bar_colors[groups.index(group)] for group in groups]
+        bar_colors_used = [bar_colors[groups.index(group)] for group in groups[::-1]]  # Inverti l'ordine dei colori
         group_legend = ax.legend(
             handles=[plt.Line2D([0], [0], color=color, lw=4) for color in reversed(bar_colors_used)], 
             labels=list(groups),  # Usa groups per le etichette della legenda in ordine inverso
