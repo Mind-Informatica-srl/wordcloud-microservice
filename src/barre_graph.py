@@ -178,6 +178,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
     for i in range(len(fasce)):
         ax.axvline(fasce[i], color='black', linestyle='-', linewidth=1.5)
+        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform())
 
     # Adatta il layout del grafico
     plt.tight_layout()
