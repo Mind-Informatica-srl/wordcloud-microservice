@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
 
-def create_survey_chart(data, category_names, colors, format, color_labels):
+def create_survey_chart(dataArray, category_names, colors, format, color_labels):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -24,6 +24,12 @@ def create_survey_chart(data, category_names, colors, format, color_labels):
     img_bytes : bytes
         L'immagine del grafico sotto forma di byte.
     """
+
+    if isinstance(dataArray, list) and all(isinstance(p, dict) and 'Dimensione' in p and 'Valori' in p for p in dataArray):
+        data = {p['Dimensione']: p['Valori'] for p in dataArray}
+    else:
+        raise ValueError("dataArray deve essere una lista di dizionari con chiavi 'Dimensione' e 'Valori'.")
+
     if not colors or not data or not category_names or not color_labels or len(data) == 0: 
         # Genera un'immagine bianca
         if format.lower() == 'svg':

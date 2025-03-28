@@ -76,7 +76,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
-                ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold')
+                if val[i] != 0 and val[i] != None and val[i] != 0.00:
+                    ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold')
 
 
         # Configura assi e legenda
