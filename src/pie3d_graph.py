@@ -5,7 +5,8 @@ import numpy as np
 import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
-
+# Importa il font manager di Matplotlib
+from matplotlib import font_manager as fm
 
 def generate_pie3d(colors, labels, sizes, explode, title, format):
     """
@@ -21,6 +22,9 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
     Returns:
         bytearray: L'immagine del grafico a torta tridimensionale come array di byte.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
 
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
@@ -59,11 +63,12 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
 
 
     # Aggiungi il titolo al grafico
-    plt.title(title)
+    plt.title(title, fontproperties=avenir_font_path, fontsize=16, fontweight='bold')
 
     # Imposta il colore delle etichette e aggiungi le percentuali sotto le etichette
     for text, percentage, color in zip(texts, percentages, colors):
         text.set_fontweight('bold')
+        text.set_fontproperties(avenir_font_path)
         if percentage != '0.00%':
             text.set_color(color)
             text.set_fontsize(10)

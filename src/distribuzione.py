@@ -4,6 +4,9 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
+# Importa il font manager di Matplotlib
+from matplotlib import font_manager as fm
+
 
 def create_survey_chart(dataArray, category_names, colors, format, color_labels):
     """
@@ -24,6 +27,9 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels)
     img_bytes : bytes
         L'immagine del grafico sotto forma di byte.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
 
     if isinstance(dataArray, list) and all(isinstance(p, dict) and 'Dimensione' in p and 'Valori' in p for p in dataArray):
         data = {p['Dimensione']: p['Valori'] for p in dataArray}
@@ -68,7 +74,7 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels)
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}%'))
 
     # Imposta le etichette sull'asse delle y in grassetto
-    ax.set_yticklabels(labels, fontweight='bold')
+    ax.set_yticklabels(labels, fontweight='bold', fontsize=10, fontproperties=avenir_font_path)
 
 
     for i, (category, color) in enumerate(zip(category_names, colors)):
@@ -78,10 +84,10 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels)
                         label="Stress " + category, color=color)
 
         # Aggiungi etichette al centro di ogni barra
-        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=10, fontweight='bold')
+        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
 
     ax.legend(ncol=len(category_names), bbox_to_anchor=(0.5, -0.2),
-              loc='upper center', fontsize='small', frameon=False)
+              loc='upper center', fontsize='small', frameon=False, prop=avenir_font_path)
     
     
     # Rimuovi il bordo esterno del grafico

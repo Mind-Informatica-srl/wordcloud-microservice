@@ -6,6 +6,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
+# Importa il font manager di Matplotlib
+from matplotlib import font_manager as fm
+
 def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white):
     """
     Crea un grafico a linea con fasce di rischio sullo sfondo.
@@ -16,6 +19,9 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     :param risk_colors: Lista di stringhe, colori delle fasce di rischio.
     :param legend_labels: Lista di stringhe, etichette della leggenda delle fasce di rischio.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
     if not categories or not values or not risk_zones or not risk_colors or not legend_labels or len(values) == 0 or all(value == 0 for value in values) or is_white:
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -47,7 +53,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     # Aggiungi le fasce di rischio come sfondo
     risk_patches = []
     for i, (start, end) in enumerate(risk_zones):
-        patch = ax.axhspan(start, end, color=risk_colors[i], alpha=0.8, label=f"{legend_labels[i]}")
+        patch = ax.axhspan(start, end, color=risk_colors[i], alpha=1, label=f"{legend_labels[i]}")
         risk_patches.append(patch)
 
     # Disegna la linea
@@ -55,14 +61,14 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
 
     # Aggiungi i valori sopra i punti
     for x, y in zip(x_positions, values):
-        ax.text(x, y + 3, f"{y:.2f}", ha="center", fontsize=10, color="black", fontweight="bold")
+        ax.text(x, y + 3, f"{y:.2f}", ha="center", fontsize=10, color="black", fontweight="bold", fontproperties=avenir_font_path)
 
     # Configura assi e legenda
     ax.set_xticks(x_positions)
-    ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right", fontsize=10, fontweight="bold")
+    ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right", fontsize=10, fontweight="bold", fontproperties=avenir_font_path)
     ax.set_ylim(0, max(risk_zones[-1]) + 10)
     # Aggiungi la legenda per le fasce di rischio lateralmente al grafico
-    ax.legend(handles=risk_patches[::-1], loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False)
+    ax.legend(handles=risk_patches[::-1], loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False, prop=avenir_font_path)
 
     # Rimuovi il bordo nero intorno all'area del grafico
     for spine in ax.spines.values():

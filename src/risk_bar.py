@@ -6,6 +6,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
+# Importa il font manager di Matplotlib
+from matplotlib import font_manager as fm
+
 def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format):
     """
     Crea un grafico a barre orizzontali con fasce di rischio sullo sfondo.
@@ -18,6 +21,10 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
     :param legend_labels: Lista di stringhe, etichette della leggenda.
     :param bar_colors: Lista di stringhe, colori delle barre per i gruppi.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
+
     if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors or len(values) == 0 or all(value == 0 for value in values): 
         if format.lower() == 'svg':
             # Genera un'immagine SVG bianca con una scritta in rosso
@@ -50,7 +57,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         # Aggiungi le fasce di rischio come sfondo
         risk_patches = []
         for i, (start, end) in enumerate(risk_zones):
-            patch = ax.axvspan(start, end, color=risk_colors[i], alpha=0.8, label=f"Rischio: {legend_labels[i]}")
+            patch = ax.axvspan(start, end, color=risk_colors[i], alpha=1, label=f"Rischio: {legend_labels[i]}")
             risk_patches.append(patch)
 
         # Definizione delle posizioni per le barre
@@ -77,12 +84,12 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
                 if val[i] != 0 and val[i] != None and val[i] != 0.00:
-                    ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold')
+                    ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold', fontproperties=avenir_font_path)
 
 
         # Configura assi e legenda
         ax.set_yticks(y_positions + bar_height * (len(groups) - 1) / 2)
-        ax.set_yticklabels(categories, fontsize=10, fontweight='bold')
+        ax.set_yticklabels(categories, fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
         # Prima legenda per le fasce di rischio
         risk_legend = ax.legend(
             handles=risk_patches, 
@@ -91,7 +98,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             ncol=len(risk_patches), 
             title="Fasce di Rischio", 
             frameon=False, 
-            title_fontsize='medium'
+            title_fontsize='medium',
+            prop= avenir_font_path
         )    
         ax.add_artist(risk_legend)
 
@@ -102,7 +110,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             labels=list(groups),  # Usa groups per le etichette della legenda in ordine inverso
             loc="center left", 
             bbox_to_anchor=(1, 0.5), 
-            frameon=False  # Rimuovi il bordo
+            frameon=False,  # Rimuovi il bordo
+            prop=avenir_font_path
         )      
         ax.add_artist(group_legend)
 

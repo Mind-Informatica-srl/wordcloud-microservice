@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from matplotlib import font_manager as fm
 
 def generate_barre_in_pila(colors, labels, sizes, format):
     """
@@ -17,6 +18,10 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     Returns:
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
+
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -57,20 +62,20 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold')
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
     ax.set_xlim(0, 100)
     ax.set_xticks(range(0, 101, 20))
-    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)])
+    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)], fontproperties=avenir_font_path)
     ax.set_yticks([]) 
 
     # Aggiungi margine inferiore
     ax.margins(y=0.2)
 
     # Aggiungi la legenda sotto l'asse delle x
-    ax.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=len(labels), frameon=False)
+    ax.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=len(labels), frameon=False, prop=avenir_font_path)
 
 
     # Rimuovi i bordi del grafico
@@ -111,6 +116,10 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     Returns:
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
+
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
+
     if not colors or not sizes or not fasce or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -151,13 +160,13 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0 and i == 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold')
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
     ax.set_xlim(0, 100)
     ax.set_xticks(range(0, 101, 20))
-    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)])
+    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)], fontproperties=avenir_font_path)
     ax.set_yticks([]) 
 
     # Aggiungi margine inferiore
@@ -178,7 +187,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
     for i in range(len(fasce)):
         ax.axvline(fasce[i], color='black', linestyle='-', linewidth=1.5)
-        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform())
+        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
 
     # Adatta il layout del grafico
     plt.tight_layout()
