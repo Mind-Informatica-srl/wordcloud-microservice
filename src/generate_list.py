@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import io
 import math
+import textwrap
 
 
 def generate_list(items, format):
@@ -13,12 +14,20 @@ def generate_list(items, format):
         img.save(img_byte_arr, format=format)
         img_byte_arr.seek(0)
         return img_byte_arr
+    
+    # Aggiungi righe vuote per arrivare a un minimo di 8 elementi
+    while len(items) < 8:
+        items.append({'Key': '', 'Value': 0})
 
         
     # Divide items into two columns
-    mid_index = math.ceil(len(items) / 2)
-    left_items = items[:mid_index]
-    right_items = items[mid_index:]
+    if len(items) > 8:
+        mid_index = math.ceil(len(items) / 2)
+        left_items = items[:mid_index]
+        right_items = items[mid_index:]
+    else:
+        left_items = items
+        right_items = []  # Colonna destra vuota
 
     # Generate list image
     width, height = 800, 50 + max(len(left_items), len(right_items)) * 30  # Dimensioni dinamiche in base alla lista
@@ -39,16 +48,35 @@ def generate_list(items, format):
         k = item['Key']
         v = item['Value']
         v_rounded = math.ceil(v)
-        draw.text((20, y), f"{k}   {v_rounded}%", fill="black", font=font)
-        y += 30
+
+        # Suddividi la chiave in più righe se è troppo lunga
+        wrapped_key = textwrap.wrap(k, width=30)
+        # Scrivi la chiave su più righe
+        for line in wrapped_key:
+            draw.text((20, y), line, fill="black", font=font)
+            y += 20  # Spaziatura tra le righe della chiave
+
+        # Scrivi il valore
+        if v_rounded != 0:
+            draw.text((300, y - 20), f"{v_rounded}%", fill="black", font=font)  # Allinea il valore all'ultima riga della chiave
+        y += 10  # Spaziatura tra gli elementi
 
     y = 20
     for item in right_items:
         k = item['Key']
         v = item['Value']
         v_rounded = math.ceil(v)
-        draw.text((420, y), f"{k}   {v_rounded}%", fill="black", font=font)
-        y += 30
+
+        # Suddividi la chiave in più righe se è troppo lunga
+        wrapped_key = textwrap.wrap(k, width=30)
+        # Scrivo la chiave
+        for line in wrapped_key:
+            draw.text((420, y), line, fill="black", font=font)
+            y += 20
+        # Scrivo il valore
+        if v_rounded != 0:
+            draw.text((700, y - 20), f"{v_rounded}%", fill="black", font=font)
+        y += 10
 
     # Salva l'immagine in un buffer di memoria
     img_byte_arr = io.BytesIO()

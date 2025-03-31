@@ -25,6 +25,35 @@ def extract_placeholder_info(text):
         return "{{"+match.group(1)+":n}}", "{{"+match.group(1)+"}}", int(match.group(2))
     return None
 
+def duplicate_shape_with_images(shape, new_slide):
+    """
+    Duplica una forma, gestendo correttamente le immagini e i gruppi di immagini.
+    """
+    if shape.shape_type == 13:  # Immagine
+        # Copia l'immagine
+        image_stream = io.BytesIO(shape.image.blob)
+        new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
+
+        # Copia il testo alternativo
+        image_element = shape._element
+        if image_element is not None:
+            cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
+            if cNvPr is not None:
+                alt_text = cNvPr.get('descr')
+                if alt_text is not None:
+                    new_image_element = new_image._element
+                    new_cNvPr = new_image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
+                    if new_cNvPr is not None:
+                        new_cNvPr.set('descr', alt_text)
+    elif shape.shape_type == 6:  # Gruppo di forme
+        # Itera attraverso le forme nel gruppo
+        for sub_shape in shape.shapes:
+            duplicate_shape_with_images(sub_shape, new_slide)
+    else:
+        # Copia altre forme
+        el = shape.element
+        new_shape = copy.deepcopy(el)
+        new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
 
 def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
     """
@@ -92,21 +121,22 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
 
                     # Copia gli elementi della slide originale nella nuova slide
                     for shape in slide_copy.shapes:
-                        if shape.shape_type == 13:  # Immagine
-                            image_stream = io.BytesIO(shape.image.blob)
-                            new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
-                            # Copia il testo alternativo
-                            image_element = shape._element
-                            if image_element is not None:
-                                cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
-                                if cNvPr is not None:
-                                    alt_text = cNvPr.get('descr')
-                                    if alt_text is not None:
-                                        new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
-                        else:
-                            el = shape.element
-                            new_shape = copy.deepcopy(el)
-                            new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
+                        duplicate_shape_with_images(shape, new_slide)
+                        # if shape.shape_type == 13:  # Immagine
+                        #     image_stream = io.BytesIO(shape.image.blob)
+                        #     new_image = new_slide.shapes.add_picture(image_stream, shape.left, shape.top, shape.width, shape.height)
+                        #     # Copia il testo alternativo
+                        #     image_element = shape._element
+                        #     if image_element is not None:
+                        #         cNvPr = image_element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'})
+                        #         if cNvPr is not None:
+                        #             alt_text = cNvPr.get('descr')
+                        #             if alt_text is not None:
+                        #                 new_image._element.find('.//p:cNvPr', namespaces={'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}).set('descr', alt_text)
+                        # else:
+                        #     el = shape.element
+                        #     new_shape = copy.deepcopy(el)
+                        #     new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
                 except Exception as e:
                     print(f"Errore durante la duplicazione della slide: {e}")
                     continue
