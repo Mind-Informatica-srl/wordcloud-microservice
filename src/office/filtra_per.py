@@ -110,10 +110,10 @@ def filtra_per(ppt, replacements):
                                     para.text = para.text.replace("{{if:" + condition + "}}", "")
                             elif v == "":
                                 if ph in replacements.keys() and replacements[ph] == '':
+                                    para.text = para.text.replace("{{if:" + condition + "}}", "")
+                                elif ph not in replacements.keys() or (ph in replacements.keys() and replacements[ph] != ''):
                                     slides_to_remove.append(count)
                                     break
-                                elif ph not in replacements.keys() or (ph in replacements.keys() and replacements[ph] != ''):
-                                    para.text = para.text.replace("{{if:" + condition + "}}", "")
                             else:
                                 if replacements[ph] != v:
                                     slides_to_remove.append(count)
