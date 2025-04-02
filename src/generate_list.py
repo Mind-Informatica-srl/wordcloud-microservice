@@ -113,7 +113,6 @@ def generate_fonti_list(items, format):
     y = 20
     for item in items:
         k = item['Key']
-        v = item['Value']
         draw.text((20, y), f"{k}", fill="black", font=font)
         y += 30
 
