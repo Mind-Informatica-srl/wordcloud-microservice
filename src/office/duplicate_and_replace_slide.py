@@ -169,7 +169,18 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                                     if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
                                         img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
                                         left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                                        new_slide.shapes.add_picture(img_saved[placeholder], left, top, width, height)
+                                        if placeholder.startswith("{{C5") or placeholder.startswith("{{C6") or placeholder.startswith("{{C7") or placeholder.startswith("{{riepilogo_go"):
+                                            height = height
+                                            width = width
+                                        else:
+                                            # calcolare rapporto per la larghezza  corretta
+                                            if width >= height:
+                                                width  = width
+                                                height = None
+                                            else:
+                                                height = height
+                                                width = None
+                                        new_slide.shapes.add_picture(img_saved[placeholder], left, top,  width, height)
                                         sp = shape
                                         new_slide.shapes._spTree.remove(sp._element)
 

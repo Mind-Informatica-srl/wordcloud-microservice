@@ -23,14 +23,14 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
         # Genera un'immagine bianca
         if format.lower() == 'svg':
             # Genera un'immagine SVG bianca con una scritta in rosso
-            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg = svgwrite.Drawing(size=(610, 180))
             dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
             byte_io = io.BytesIO()
             dwg.write(byte_io)
             byte_io.seek(0)
             return byte_io.read()
         else:
-            img = Image.new('RGB', (800, 600), color='white')
+            img = Image.new('RGB', (610, 180), color='white')
             font_path = "fonts/Figtree-VariableFont_wght.ttf"
             try:
                 font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
@@ -50,7 +50,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
 
     # Crea la word cloud
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
-    wc = WordCloud(width=800, height=400, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
+    wc = WordCloud(width=610, height=180, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
     wc.recolor(color_func=custom_color_func)

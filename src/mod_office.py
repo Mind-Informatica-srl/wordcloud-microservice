@@ -35,11 +35,34 @@ def replace_image_in_pptx(ppt, image_replacements):
                         left, top, width, height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini")
+                        if placeholder.startswith("{{C5") or placeholder.startswith("{{C6") or placeholder.startswith("{{C7") or placeholder.startswith("{{riepilogo_go"):
+                                            height = height
+                                            width = width
+                        else:
+                            # calcolare rapporto per la larghezza  corretta
+                            if width >= height:
+                                width  = width
+                                height = None
+                            else:
+                                height = height
+                                width = None
+
                         slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                     elif alt_text is not None and placeholder in alt_text:
                         # Posizione e dimensioni dell'immagine
                         left, top, width, height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
+                        if placeholder.startswith("{{C5") or placeholder.startswith("{{C6") or placeholder.startswith("{{C7") or placeholder.startswith("{{riepilogo_go"):
+                            height = height
+                            width = width
+                        else:
+                            # calcolare rapporto per la larghezza  corretta
+                            if width >= height:
+                                width  = width
+                                height = None
+                            else:
+                                height = height
+                                width = None
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini")
                         slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                         # Rimuove l'immagine originale
