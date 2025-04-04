@@ -31,7 +31,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
             dwg = svgwrite.Drawing(size=(800, 600))
             dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
             byte_io = io.BytesIO()
-            dwg.write(byte_io)
+            byte_io.write(dwg.tostring().encode('utf-8'))
             byte_io.seek(0)
             return byte_io.read()
         else:

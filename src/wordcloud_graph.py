@@ -26,7 +26,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
             dwg = svgwrite.Drawing(size=(610, 180))
             dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
             byte_io = io.BytesIO()
-            dwg.write(byte_io)
+            byte_io.write(dwg.tostring().encode('utf-8'))
             byte_io.seek(0)
             return byte_io.read()
         else:

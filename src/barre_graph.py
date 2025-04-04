@@ -26,14 +26,14 @@ def generate_barre_in_pila(colors, labels, sizes, format):
         # Genera un'immagine bianca
         if format.lower() == 'svg':
             # Genera un'immagine SVG bianca con una scritta in rosso
-            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg = svgwrite.Drawing(size=(400, 300))
             dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
             byte_io = io.BytesIO()
-            dwg.write(byte_io)
+            byte_io.write(dwg.tostring().encode('utf-8'))
             byte_io.seek(0)
             return byte_io.read()
         else:
-            img = Image.new('RGB', (800, 600), color='white')
+            img = Image.new('RGB', (400, 300), color='white')
             font_path = "fonts/Figtree-VariableFont_wght.ttf"
             try:
                 font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
@@ -41,7 +41,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
                 font = ImageFont.load_default()  # Usa font di default se non trovato
 
             draw = ImageDraw.Draw(img)
-            draw.text((400, 300), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
+            draw.text((200, 150), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
             byte_io = io.BytesIO()
             img.save(byte_io, format=format)
             byte_io.seek(0)
@@ -124,14 +124,14 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
         # Genera un'immagine bianca
         if format.lower() == 'svg':
             # Genera un'immagine SVG bianca con una scritta in rosso
-            dwg = svgwrite.Drawing(size=(800, 600))
+            dwg = svgwrite.Drawing(size=(400, 300))
             dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
             byte_io = io.BytesIO()
-            dwg.write(byte_io)
+            byte_io.write(dwg.tostring().encode('utf-8'))
             byte_io.seek(0)
             return byte_io.read()
         else:
-            img = Image.new('RGB', (800, 600), color='white')
+            img = Image.new('RGB', (400, 300), color='white')
             font_path = "fonts/Figtree-VariableFont_wght.ttf"
             try:
                 font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
@@ -139,7 +139,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
                 font = ImageFont.load_default()  # Usa font di default se non trovato
 
             draw = ImageDraw.Draw(img)
-            draw.text((400, 300), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
+            draw.text((200, 150), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
             byte_io = io.BytesIO()
             img.save(byte_io, format=format)
             byte_io.seek(0)
