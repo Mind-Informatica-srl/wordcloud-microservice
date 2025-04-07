@@ -5,11 +5,12 @@ import io
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
 
-def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white):
+def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white, width, height):
     """
     Crea un grafico a linea con fasce di rischio sullo sfondo.
 
@@ -22,6 +23,14 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 7
+    else:
+        width = width / EMU
+        height = height / EMU
+
     if not categories or not values or not risk_zones or not risk_colors or not legend_labels or len(values) == 0 or all(value == 0 for value in values) or is_white:
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -48,7 +57,7 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
             return byte_io.read()
     
     x_positions = np.arange(len(categories))
-    fig, ax = plt.subplots(figsize=(14, 7))
+    fig, ax = plt.subplots(figsize=(width, height))
 
     # Aggiungi le fasce di rischio come sfondo
     risk_patches = []

@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
-def generate_wordcloud(word_colors, word_frequencies, default_color, format):
+def generate_wordcloud(word_colors, word_frequencies, default_color, format, width, height):
     """
     Genera una word cloud con colori e frequenze personalizzate e restituisce l'immagine come array di byte.
 
@@ -18,6 +19,16 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
     Returns:
         bytearray: L'immagine della word cloud come array di byte.
     """
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 610
+        height = 180
+    else:
+        pol_width = width / EMU
+        pol_height = height / EMU
+        width = int(pol_width * 100)
+        height = int(pol_height * 100)
+
     if not word_colors or not word_frequencies or not default_color or word_frequencies == {} or all(value == 0 for value in word_frequencies.values()):
 
         # Genera un'immagine bianca
@@ -50,7 +61,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format):
 
     # Crea la word cloud
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
-    wc = WordCloud(width=610, height=180, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
+    wc = WordCloud(width=width, height=height, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
     wc.recolor(color_func=custom_color_func)

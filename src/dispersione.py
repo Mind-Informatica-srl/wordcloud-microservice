@@ -7,6 +7,7 @@ import textwrap
 import matplotlib.patches as patches
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
@@ -22,10 +23,17 @@ labels = [
     "Cultura organizzativa", "Equilibrio tra lavoro e vita privata", 
     "Scarsa chiarezza dei ruoli", "Valutazione"
 ]
-def generate_dispersione(x, y, labels, format):
+def generate_dispersione(x, y, labels, format, width, height):
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 7
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if not x or not y or not labels or len(x) != len(y) or len(x) != len(labels) or len(y) != len(labels) or all(value == 0 for value in x) or all(value == 0 for value in y) or x is None or y is None or labels is None: 
         # Genera un'immagine bianca
@@ -53,7 +61,7 @@ def generate_dispersione(x, y, labels, format):
             return byte_io.read()
     
     # Creazione del grafico
-    fig, ax = plt.subplots(figsize=(14, 7))
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
 
     # Aggiunta dei punti
     ax.scatter(x, y, color='red')

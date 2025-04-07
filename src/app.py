@@ -40,9 +40,11 @@ def create_wordcloud():
     word_frequencies = data.get('wordFrequencies', {})
     default_color = data.get('default_color', '#000000')
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format)
+        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -53,9 +55,11 @@ def create_list():
     print(data)
     items = data.get('items', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_list(items, format)
+        image_bytes = generate_list(items, format, width, height)
         return send_file(image_bytes, mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -98,9 +102,11 @@ def create_barre_in_pila():
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_in_pila(colors, labels, sizes, format)
+        image_bytes = generate_barre_in_pila(colors, labels, sizes, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -113,9 +119,11 @@ def create_barre_in_pila_serie_s():
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
     fasce = data.get('fasce_confidenza', [])
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, fasce, format)
+        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -128,9 +136,11 @@ def create_barre_orizzontali():
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_orizzontali(colors, labels, sizes, format)
+        image_bytes = generate_barre_orizzontali(colors, labels, sizes, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -144,10 +154,12 @@ def create_distribuzione():
     c = data.get('colors', [])
     format = data.get('format', 'png')
     cl = data.get('color_labels', [])
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
 
     try:
-        image_bytes = create_survey_chart(survey_data, cn, c, format, cl)
+        image_bytes = create_survey_chart(survey_data, cn, c, format, cl, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -162,10 +174,12 @@ def create_pie3d():
     explode = data.get('explode', [])
     title = data.get('title', '3D Pie Chart')
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
 
     try:
-        image_bytes = generate_pie3d(colors, labels, sizes, explode, title, format)
+        image_bytes = generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -178,9 +192,11 @@ def create_dispersione():
     y = data.get('y', [])
     labels = data.get('labels', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_dispersione(x, y, labels, format)
+        image_bytes = generate_dispersione(x, y, labels, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -197,9 +213,11 @@ def create_risk_bar():
     legend_labels = data.get('legend_labels', [])
     bar_colors = data.get('bar_colors', []) 
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format)
+        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -215,9 +233,11 @@ def create_risk_line():
     legend_labels = data.get('legend_labels', [])
     format = data.get('format', 'png')
     is_white = data.get('is_white', False)
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white)
+        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white, width, height)
         return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500

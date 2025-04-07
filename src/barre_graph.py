@@ -5,8 +5,9 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 from matplotlib import font_manager as fm
+from constants import EMU
 
-def generate_barre_in_pila(colors, labels, sizes, format):
+def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -22,6 +23,12 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
 
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 10
+        height = 3
+    else:
+        width = width / EMU
+        height = height / EMU
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -52,7 +59,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     normalized_sizes = [size / total * 100 for size in sizes]
 
     # Crea il grafico a barre in pila
-    fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
     # for i in range(len(normalized_sizes)):
     #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)
@@ -105,7 +112,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     byte_io.seek(0)
     return byte_io.read()
 
-def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
+def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -119,6 +126,13 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 10
+        height = 3
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if not colors or not sizes or not fasce or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
@@ -150,7 +164,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     normalized_sizes = [size / total * 100 for size in sizes]
 
     # Crea il grafico a barre in pila
-    fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
     # for i in range(len(normalized_sizes)):
     #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)

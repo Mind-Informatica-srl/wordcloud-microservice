@@ -5,10 +5,11 @@ import io
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
-def generate_barre_orizzontali(colors, labels, sizes, format):
+def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
     """
     Genera un grafico a barre orizzontali con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -23,6 +24,13 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 6
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if not sizes or not colors or not labels or sizes.count(0) == len(sizes) or sizes is None or colors is None or labels is None:
         # Genera un'immagine bianca
@@ -50,7 +58,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format):
             return byte_io.read()
 
     # Crea il grafico a barre orizzontali
-    fig, ax = plt.subplots(figsize=(14,6))
+    fig, ax = plt.subplots(figsize=(width, height))
     y_pos = np.arange(len(labels))
     bar_height = 0.4  # Altezza delle barre
     ax.barh(y_pos, sizes, color=colors, edgecolor=None, height=bar_height)

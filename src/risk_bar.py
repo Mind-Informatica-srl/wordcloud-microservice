@@ -5,11 +5,12 @@ import io
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
 
-def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format):
+def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format, width, height):
     """
     Crea un grafico a barre orizzontali con fasce di rischio sullo sfondo.
 
@@ -24,6 +25,13 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 7
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors or len(values) == 0 or all(value == 0 for value in values): 
         if format.lower() == 'svg':
@@ -52,7 +60,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
     try:
         num_categories = len(categories)
         bar_height = 0.1 # / len(groups)
-        fig, ax = plt.subplots(figsize=(14, 7)) 
+        fig, ax = plt.subplots(figsize=(width, height)) 
 
         # Aggiungi le fasce di rischio come sfondo
         risk_patches = []

@@ -7,8 +7,9 @@ from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
+from constants import EMU
 
-def generate_pie3d(colors, labels, sizes, explode, title, format):
+def generate_pie3d(colors, labels, sizes, explode, title, format, width, height):
     """
     Genera un grafico a torta tridimensionale con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -25,6 +26,13 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 6
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
@@ -52,7 +60,7 @@ def generate_pie3d(colors, labels, sizes, explode, title, format):
             return byte_io.read()
 
     # Crea il grafico a torta tridimensionale
-    plt.figure(figsize=(14, 6))
+    plt.figure(figsize=(width, height))
     wedges, texts = plt.pie(
     sizes, labels=labels, explode=explode, shadow=False, colors=colors, startangle=0,
     labeldistance=1.1)

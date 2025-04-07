@@ -85,9 +85,10 @@ import textwrap
     
 #     return img_byte_arr
 
-def generate_list(items, format):
+def generate_list(items, format, width, height):
     # Imposta dimensioni fisse
-    width, height = 800, 400  # Altezza fissa
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width, height = 800, 400  # Altezza fissa
     max_items_per_column = 8  # Massimo 10 elementi per colonna
     
     # Se la lista è vuota, restituisci un'immagine vuota
@@ -112,13 +113,13 @@ def generate_list(items, format):
     # Percorso del font
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
     try:
-        font = ImageFont.truetype(font_path, 20)  # Ridotto font per ottimizzare lo spazio
+        font = ImageFont.truetype(font_path, 16)  # Ridotto font per ottimizzare lo spazio
     except IOError:
         font = ImageFont.load_default()
     
-    y_start = 15  # Margine superiore
-    y_step = 20  # Spaziatura verticale ridotta
-    line_spacing = 20  # Spaziatura ridotta tra le righe
+    y_start = 5  # Margine superiore
+    y_step = 5  # Spaziatura verticale ridotta
+    line_spacing = 15  # Spaziatura ridotta tra le righe
     
     # Disegna la prima colonna
     y = y_start
@@ -131,8 +132,8 @@ def generate_list(items, format):
             y += line_spacing
         
         if v != 0:
-            draw.text((300, y - line_spacing), f"{v}%", fill="black", font=font)
-        y += 10
+            draw.text((250, y - line_spacing), f"{v}%", fill="black", font=font)
+        y += y_step
     
     # Disegna la seconda colonna
     y = y_start
@@ -141,12 +142,12 @@ def generate_list(items, format):
         wrapped_key = textwrap.wrap(k, width=25)  # Avvolge il testo con maggiore efficienza
         
         for line in wrapped_key:
-            draw.text((420, y), line, fill="black", font=font)
+            draw.text((300, y), line, fill="black", font=font)
             y += line_spacing
         
         if v != 0:
-            draw.text((700, y - (len(wrapped_key) * line_spacing)), f"{v}%", fill="black", font=font)
-        y += 10
+            draw.text((560, y - (len(wrapped_key) * line_spacing)), f"{v}%", fill="black", font=font)
+        y += y_step
     
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format=format)

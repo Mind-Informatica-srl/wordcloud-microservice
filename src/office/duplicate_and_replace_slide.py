@@ -1,6 +1,7 @@
 import copy
 import io
 import re
+from PIL import Image
 
 from office.save_image import save_image
 
@@ -167,19 +168,32 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
 
                                 for placeholder, image_path in element["immagini"].items():
                                     if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
-                                        img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori")
-                                        left, top, width, height = shape.left, shape.top, shape.width, shape.height
-                                        if placeholder.startswith("{{C5") or placeholder.startswith("{{C6") or placeholder.startswith("{{C7") or placeholder.startswith("{{riepilogo_go"):
-                                            height = height
-                                            width = width
+                                        left, top, or_width, or_height = shape.left, shape.top, shape.width, shape.height
+                                        img_saved = save_image(placeholder, image_path, "storage/immagini/indicatori", width=or_width, height=or_height)
+                                        dimfissa = or_width if or_width > or_height else or_height
+                                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                                            height = or_height
+                                            width = or_width
                                         else:
+                                            with Image.open(img_saved[placeholder]) as img:
+                                                new_width, new_height = img.size
                                             # calcolare rapporto per la larghezza  corretta
-                                            if width >= height:
-                                                width  = width
-                                                height = None
+                                            # Calcolare le nuove dimensioni mantenendo il rapporto
+                                            if dimfissa == or_width:
+                                                width = or_width
+                                                height = int(new_height * (or_width / new_width))
                                             else:
-                                                height = height
-                                                width = None
+                                                height = or_height
+                                                width = int(new_width * (or_height / new_height))
+
+                                            if width > or_width or height > or_height:
+                                                # Ridimensiona l'immagine per adattarla
+                                                if width > or_width:
+                                                    width = or_width
+                                                    height = int(new_height * (or_width / new_width))
+                                                elif height > or_height:
+                                                    height = or_height
+                                                    width = int(new_width * (or_height / new_height))
                                         new_slide.shapes.add_picture(img_saved[placeholder], left, top,  width, height)
                                         sp = shape
                                         new_slide.shapes._spTree.remove(sp._element)

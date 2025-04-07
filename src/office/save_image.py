@@ -3,7 +3,7 @@ import os
 import requests
 
 
-def save_image(key, url, image_path):
+def save_image(key, url, image_path, width, height):
     """
     in image ho una mappa stringa stringa
     nei valori ho un url di un immagine
@@ -13,8 +13,10 @@ def save_image(key, url, image_path):
     saved_images = {
         # "{{immagine_prova1}}": "storage/immagini/image1.png"
     }
-
-    url = os.getenv("BASE_URL") + url
+    if key != "{{azioni_miglioramento_proposte}}":
+        url = os.getenv("BASE_URL") + url + f"&width={width}&height={height}"
+    else:
+        url = os.getenv("BASE_URL") + url + f"?width={width}&height={height}"
     print(f"Sto per chiamare '{url}'")
 
     response = requests.get(url)

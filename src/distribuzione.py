@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
+from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
 
 
-def create_survey_chart(dataArray, category_names, colors, format, color_labels):
+def create_survey_chart(dataArray, category_names, colors, format, color_labels, width, height):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -30,6 +31,13 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels)
 
     font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 14
+        height = 7
+    else:
+        width = width / EMU
+        height = height / EMU
 
     if isinstance(dataArray, list) and all(isinstance(p, dict) and 'Dimensione' in p and 'Valori' in p for p in dataArray):
         data = {p['Dimensione']: p['Valori'] for p in dataArray}
@@ -66,7 +74,7 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels)
     cumulative_values = values.cumsum(axis=1)
 
     # Creazione del grafico
-    fig, ax = plt.subplots(figsize=(14,7))
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
     ax.invert_yaxis()
     ax.xaxis.set_visible(True)
     ax.set_xlim(0, np.sum(values, axis=1).max())
