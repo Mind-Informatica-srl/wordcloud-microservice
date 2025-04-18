@@ -6,6 +6,7 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 from constants import EMU
+import cv2
 
 def generate_wordcloud(word_colors, word_frequencies, default_color, format, width, height):
     """
@@ -61,14 +62,28 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format, wid
 
     # Crea la word cloud
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
-    wc = WordCloud(width=width, height=height, background_color="white", font_path=font_path).generate_from_frequencies(word_frequencies)
+    wc = WordCloud(width=width, height=height, background_color="white", relative_scaling=1.0, max_font_size=500, font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
     wc.recolor(color_func=custom_color_func)
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    wc.to_image().save(byte_io, format=format)
+    if format.lower() == 'svg':
+        # layout = wc.layout_
+        # dwg = svgwrite.Drawing(size=(width, height))
+        # for word, font_size, position, orientation, color in layout:
+        #     # Calcola la posizione e il colore
+        #     x = position[0]
+        #     y = position[1]
+        #     color = custom_color_func(word[0], font_size, position, orientation)
+        #     # Aggiungi il testo all'immagine SVG
+        #     dwg.add(dwg.text(word[0], insert=(x, y), font_size=font_size, fill=color, font_family="Avenir"))
+        # # Salva come SVG
+        # byte_io.write(dwg.tostring().encode('utf-8'))
+        byte_io.write(wc.to_svg(embed_font=True, optimize_embedded_font=True).encode('utf-8'))
+    else:
+        wc.to_image().save(byte_io, format=format)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

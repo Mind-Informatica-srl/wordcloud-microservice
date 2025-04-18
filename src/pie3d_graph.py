@@ -60,9 +60,13 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
             return byte_io.read()
 
     # Crea il grafico a torta tridimensionale
+    # devo invertire i colori, size e labels
+    colors = colors[::-1]
+    sizes = sizes[::-1]
+    labels = labels[::-1]
     plt.figure(figsize=(width, height))
     wedges, texts = plt.pie(
-    sizes, labels=labels, explode=explode, shadow=False, colors=colors, startangle=0,
+    sizes, labels=labels, explode=explode, shadow=False, colors=colors, startangle=90,
     labeldistance=1.1)
 
     # Calcola le percentuali

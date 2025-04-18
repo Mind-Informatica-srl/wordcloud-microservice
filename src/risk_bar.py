@@ -59,7 +59,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
     try:
         num_categories = len(categories)
-        bar_height = 0.1 # / len(groups)
+        bar_height = 0.15 # / len(groups)
+        bar_spacing = 0.05
         fig, ax = plt.subplots(figsize=(width, height)) 
 
         # Aggiungi le fasce di rischio come sfondo
@@ -81,7 +82,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         group_patches = []
         for i, group in enumerate(groups):
             bar = ax.barh(
-                y_positions + i * bar_height,
+                y_positions + i * (bar_height + bar_spacing),
                 [val[i] for val in values],
                 height=bar_height,
                 label=group,
@@ -92,7 +93,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
                 if val[i] != 0 and val[i] != None and val[i] != 0.00:
-                    ax.text(val[i], y_positions[j] + i * bar_height, f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold', fontproperties=avenir_font_path)
+                    ax.text(val[i], y_positions[j] + i * (bar_height + bar_spacing), f'{val[i]:.2f}', va='center', ha='left', fontsize=8, color='black', fontweight='bold', fontproperties=avenir_font_path)
 
 
         # Configura assi e legenda
