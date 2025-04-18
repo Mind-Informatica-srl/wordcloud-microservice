@@ -6,7 +6,6 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 from constants import EMU
-import cv2
 
 def generate_wordcloud(word_colors, word_frequencies, default_color, format, width, height):
     """
