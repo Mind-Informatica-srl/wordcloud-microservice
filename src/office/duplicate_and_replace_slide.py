@@ -139,7 +139,7 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                         #     new_shape = copy.deepcopy(el)
                         #     new_slide.shapes._spTree.insert_element_before(new_shape, 'p:extLst')
                 except Exception as e:
-                    print(f"Errore durante la duplicazione della slide: {e}")
+                    print(f"Errore durante la duplicazione della slide: {e}", flush=True)
                     continue
 
             # Sostituzione testo e immagini

@@ -18,6 +18,7 @@ def save_image(key, url, image_path, width, height):
     else:
         url = os.getenv("BASE_URL") + url + f"?width={width}&height={height}"
     print(f"Sto per chiamare '{url}'")
+    
 
     response = requests.get(url)
     if response.status_code == 200:

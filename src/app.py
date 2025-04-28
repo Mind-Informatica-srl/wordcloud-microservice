@@ -16,8 +16,16 @@ import io
 import os
 from PIL import Image
 import base64
+import logging
 
 app = Flask(__name__)
+
+# Configura il logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 mime_types = {
         "png": "image/png",
@@ -270,6 +278,8 @@ def modifica_office():
         with open(file_path, 'wb') as f:
             f.write(file)
     except Exception as e:
+        app.logger.error(f"Errore durante il salvataggio del file: {e}")
+        print(f"Errore durante il salvataggio del file: {e}", flush=True)
         return jsonify({'error': str(e)}), 500
 
     try:
@@ -278,7 +288,8 @@ def modifica_office():
         elimina_cartella(UPLOAD_FOLDER)
         return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
     except Exception as e:
-        print(str(e))
+        app.logger.error(f"Errore durante la modifica del file: {e}")
+        print(str(e), flush=True)
         return jsonify({'error': str(e)}), 500
 
 

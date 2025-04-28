@@ -187,7 +187,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         try:
             replacer.replace_text(replacements_t)
         except KeyError as e:
-            print(f"Errore durante la sostituzione del testo: {e}")
+            print(f"Errore durante la sostituzione del testo: {e}", flush=True)
         replacer.write_presentation_to_file(changed_presentation)
         # for for_type, sequences in for_indexes.items():
         #     reps = replacements_for_each.get(for_type)
