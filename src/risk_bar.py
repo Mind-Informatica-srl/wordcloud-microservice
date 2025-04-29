@@ -59,8 +59,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
 
     try:
         num_categories = len(categories)
-        bar_height = 0.15 # / len(groups)
-        bar_spacing = 0.05
+        bar_height = 0.30 # / len(groups)
+        bar_spacing = 0.10
         fig, ax = plt.subplots(figsize=(width, height)) 
 
         # Aggiungi le fasce di rischio come sfondo
@@ -70,7 +70,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             risk_patches.append(patch)
 
         # Definizione delle posizioni per le barre
-        y_positions = np.arange(num_categories)
+        y_positions = np.arange(num_categories) * (len(groups) * (bar_height + bar_spacing) + 0.2)
 
         bar_col = []
         for i in range(len(groups)):

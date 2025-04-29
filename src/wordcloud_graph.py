@@ -61,7 +61,7 @@ def generate_wordcloud(word_colors, word_frequencies, default_color, format, wid
 
     # Crea la word cloud
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
-    wc = WordCloud(width=width, height=height, background_color="white", relative_scaling=1.0, max_font_size=500, font_path=font_path).generate_from_frequencies(word_frequencies)
+    wc = WordCloud(width=width, height=height, background_color=None, mode='RGBA', relative_scaling=0.6, font_path=font_path).generate_from_frequencies(word_frequencies)
 
     # Applica i colori personalizzati
     wc.recolor(color_func=custom_color_func)
