@@ -107,12 +107,12 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
     
     # Salvataggio e visualizzazione
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close() 
+    fig.savefig(byte_io, format=format)
+    plt.close(fig) 
     byte_io.seek(0)
 
     return byte_io.read()

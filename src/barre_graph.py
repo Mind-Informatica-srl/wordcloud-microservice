@@ -98,13 +98,12 @@ def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
-
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
     #  Rimuove i bordi inutili
     plt.box(False)  
 
@@ -204,12 +203,12 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
         ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
 
     #  Rimuove i bordi inutili
     plt.box(False)  

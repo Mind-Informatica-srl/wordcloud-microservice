@@ -64,8 +64,8 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
     colors = colors[::-1]
     sizes = sizes[::-1]
     labels = labels[::-1]
-    plt.figure(figsize=(width, height))
-    wedges, texts = plt.pie(
+    fig, ax = plt.subplots(figsize=(width, height), subplot_kw=dict(aspect="equal"))
+    wedges, texts = ax.pie(
     sizes, labels=labels, explode=explode, shadow=False, colors=colors, startangle=90,
     labeldistance=1.1)
 
@@ -89,15 +89,15 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
             text.set_text('')
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
 
 
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

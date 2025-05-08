@@ -83,7 +83,7 @@ def generate_dispersione(x, y, labels, format, width, height):
             alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'right'}
         else:
             alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
-        
+        #TODO: con questo font non si apre nel loro editor online, forse risolto con bbox_inches="tight"
         texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=8, fontweight='bold', fontproperties=avenir_font_path , **alignment))
 
 
@@ -128,22 +128,22 @@ def generate_dispersione(x, y, labels, format, width, height):
     ax.tick_params(axis='both', which='both', color='green')
 
     # Imposta il colore del contorno a verde
-    for spine in plt.gca().spines.values():
+    for spine in fig.gca().spines.values():
         spine.set_edgecolor('green')
 
     # Rimuovi le etichette degli assi
-    plt.gca().set_xticklabels([])
-    plt.gca().set_yticklabels([])
+    fig.gca().set_xticklabels([])
+    fig.gca().set_yticklabels([])
 
     # Titolo
     # plt.title("Distribuzione Importanza-Frequenza", fontsize=14, pad=15)
 
     # Salvataggio e visualizzazione
-    plt.tight_layout()
+    fig.tight_layout()
 
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format, bbox_inches="tight")
+    plt.close(fig)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

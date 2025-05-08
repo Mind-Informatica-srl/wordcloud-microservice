@@ -84,11 +84,11 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
         spine.set_visible(False)
 
     # Mostra il grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

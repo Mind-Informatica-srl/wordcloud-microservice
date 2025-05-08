@@ -88,12 +88,12 @@ def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
 
     # Restituisce l'immagine come array di byte
     byte_io.seek(0)

@@ -129,13 +129,13 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             spine.set_visible(False)
 
         # Aggiungi spazio extra intorno al grafico
-        plt.subplots_adjust(left=0.1, right=0.8, top=0.9, bottom=0.3)
+        fig.subplots_adjust(left=0.1, right=0.8, top=0.9, bottom=0.3)
 
         # Mostra il grafico
-        plt.tight_layout()
+        fig.tight_layout()
         byte_io = io.BytesIO()
-        plt.savefig(byte_io, format=format, bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight', dpi=300)
-        plt.close()
+        fig.savefig(byte_io, format=format, bbox_extra_artists=(risk_legend, group_legend), bbox_inches='tight', dpi=300)
+        plt.close(fig)
 
         # Restituisce l'immagine come array di byte
         byte_io.seek(0)
