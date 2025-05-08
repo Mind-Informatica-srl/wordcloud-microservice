@@ -25,7 +25,7 @@ labels = [
 ]
 def generate_dispersione(x, y, labels, format, width, height):
 
-    font_path = "fonts/Avenir-Heavy.ttf"
+    font_path = "fonts/Figtree-Bold.ttf"
     avenir_font_path = fm.FontProperties(fname=font_path)
 
     if width is None or height is None or width == 0.0 or height == 0.0:
