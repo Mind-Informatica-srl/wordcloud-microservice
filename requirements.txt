@@ -8,3 +8,4 @@ python-docx
 requests
 python-pptx-text-replacer
 svgwrite
+matplotlib>=3.10
