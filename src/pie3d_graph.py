@@ -83,7 +83,7 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
         text.set_fontproperties(avenir_font_path)
         if percentage != '0.00%':
             text.set_color(color)
-            text.set_fontsize(10)
+            text.set_fontsize(12)
             text.set_text(f'{text.get_text()}\n{percentage}')
         else:
             text.set_text('')

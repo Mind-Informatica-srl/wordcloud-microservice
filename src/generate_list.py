@@ -92,8 +92,15 @@ def generate_list(items, format, width, height):
     max_items_per_column = 8  # Massimo 10 elementi per colonna
     
     # Se la lista è vuota, restituisci un'immagine vuota
-    if not items:
+    if not items or len(items) == 0:
         img = Image.new("RGB", (width, height), "white")
+        font_path = "fonts/Figtree-VariableFont_wght.ttf"
+        try:
+            font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
+        except IOError:
+            font = ImageFont.load_default()  # Usa font di default se non trovato
+        draw = ImageDraw.Draw(img)
+        draw.text((200, 150), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
         img_byte_arr = io.BytesIO()
         img.save(img_byte_arr, format=format)
         img_byte_arr.seek(0)

@@ -76,15 +76,7 @@ def create_list():
 
     try:
         image_bytes = generate_list(items, format, width, height)
-        buffer = io.BytesIO(image_bytes)
-        response = make_response(buffer.read())
-        response.headers.set('Content-Type', mime_types[format])
-        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        response.headers.set('Pragma', 'no-cache')
-        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
-        response.headers.set('Expires', '0')
-        return response
-        ## return send_file(image_bytes, mimetype=mime_types[format])
+        return send_file(image_bytes, mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -97,15 +89,7 @@ def create_fonti_list():
 
     try:
         image_bytes = generate_fonti_list(items, format)
-        buffer = io.BytesIO(image_bytes)
-        response = make_response(buffer.read())
-        response.headers.set('Content-Type', mime_types[format])
-        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        response.headers.set('Pragma', 'no-cache')
-        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
-        response.headers.set('Expires', '0')
-        return response
-        # return send_file(image_bytes, mimetype=mime_types[format])
+        return send_file(image_bytes, mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     

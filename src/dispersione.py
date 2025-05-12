@@ -84,7 +84,7 @@ def generate_dispersione(x, y, labels, format, width, height):
         else:
             alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
         #TODO: con questo font non si apre nel loro editor online, forse risolto con bbox_inches="tight", oppure togliendo ovunque fontproperties=avenir_font_path
-        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=8, fontweight='bold', fontproperties=avenir_font_path , **alignment))
+        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=10, fontweight='bold', fontproperties=avenir_font_path , **alignment))
 
 
     # Se nell'intorno del punto ci sono altre etichette, le sposta per evitare sovrapposizioni
