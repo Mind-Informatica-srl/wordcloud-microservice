@@ -10,7 +10,7 @@ from constants import EMU
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
 
-def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format, width, height):
+def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, legend_colors, bar_colors, format, width, height):
     """
     Crea un grafico a barre orizzontali con fasce di rischio sullo sfondo.
 
@@ -123,6 +123,11 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             prop=avenir_font_path,
             fontsize=12,
         )      
+        for text, color in zip(group_legend.get_texts(), legend_colors):
+            if color != "" or color != None:
+                text.set_color(color)
+            else:
+                text.set_color("black")
         ax.add_artist(group_legend)
 
         # Rimuovi il bordo nero intorno all'area del grafico

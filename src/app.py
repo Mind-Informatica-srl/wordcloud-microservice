@@ -275,13 +275,14 @@ def create_risk_bar():
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
+    legend_colors = data.get('legend_colors', [])
     bar_colors = data.get('bar_colors', []) 
     format = data.get('format', 'png')
     width = data.get('width', 610)
     height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format, width, height)
+        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, legend_colors, bar_colors, format, width, height)
         buffer = io.BytesIO(image_bytes)
         response = make_response(buffer.read())
         response.headers.set('Content-Type', mime_types[format])
@@ -303,13 +304,14 @@ def create_risk_line():
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
+    color_categories = data.get('color_categories', [])
     format = data.get('format', 'png')
     is_white = data.get('is_white', False)
     width = data.get('width', 610)
     height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white, width, height)
+        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, color_categories, format, is_white, width, height)
         buffer = io.BytesIO(image_bytes)
         response = make_response(buffer.read())
         response.headers.set('Content-Type', mime_types[format])

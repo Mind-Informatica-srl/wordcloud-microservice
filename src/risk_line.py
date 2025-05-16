@@ -10,7 +10,7 @@ from constants import EMU
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
 
-def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format, is_white, width, height):
+def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, color_categories, format, is_white, width, height):
     """
     Crea un grafico a linea con fasce di rischio sullo sfondo.
 
@@ -75,6 +75,9 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
     # Configura assi e legenda
     ax.set_xticks(x_positions)
     ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right", fontsize=12, fontweight="bold", fontproperties=avenir_font_path)
+    for tick_label, color in zip(ax.get_xticklabels(), color_categories):
+        tick_label.set_color(color)
+        
     ax.set_ylim(0, max(risk_zones[-1]) + 10)
     # Aggiungi la legenda per le fasce di rischio lateralmente al grafico
     ax.legend(handles=risk_patches[::-1], loc="center left", bbox_to_anchor=(1, 0.5), title="Fasce di Rischio", title_fontsize="medium", frameon=False, prop=avenir_font_path)

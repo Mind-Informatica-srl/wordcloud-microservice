@@ -105,6 +105,11 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     # Aggiungi linee grigie chiare per ogni etichetta dell'asse delle ascisse
     ax.grid(axis='x', color='lightgrey', linestyle='-', linewidth=0.5)
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
+
+    # aggiungi una riga rossa sopra il grafico a partire all'80% dell'asse x
+    ax.axvline(x=80, color='red', linestyle='-', linewidth=2)
+    # Aggiungi un'etichetta sopra la linea rossa
+    ax.text(77, -0.8, '% rilevante \nStress alto', color='black', fontsize=12, fontweight='bold', fontproperties=avenir_font_path)
     
     # Salvataggio e visualizzazione
     fig.tight_layout()
