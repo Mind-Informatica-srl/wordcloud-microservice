@@ -2,8 +2,12 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
+from PIL import Image, ImageDraw, ImageFont
+import svgwrite
+from matplotlib import font_manager as fm
+from constants import EMU
 
-def generate_barre_in_pila(colors, labels, sizes, format):
+def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -16,12 +20,46 @@ def generate_barre_in_pila(colors, labels, sizes, format):
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
 
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 10
+        height = 3
+    else:
+        width = width / EMU
+        height = height / EMU
+    if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(400, 300))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            byte_io.write(dwg.tostring().encode('utf-8'))
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (400, 300), color='white')
+            font_path = "fonts/Figtree-VariableFont_wght.ttf"
+            try:
+                font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
+            except IOError:
+                font = ImageFont.load_default()  # Usa font di default se non trovato
+
+            draw = ImageDraw.Draw(img)
+            draw.text((200, 150), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
+        
     # Calcola la somma delle dimensioni per normalizzare le percentuali
     total = sum(sizes)
     normalized_sizes = [size / total * 100 for size in sizes]
 
     # Crea il grafico a barre in pila
-    fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
     # for i in range(len(normalized_sizes)):
     #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)
@@ -31,20 +69,20 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
     ax.set_xlim(0, 100)
     ax.set_xticks(range(0, 101, 20))
-    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)])
+    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)], fontproperties=avenir_font_path)
     ax.set_yticks([]) 
 
     # Aggiungi margine inferiore
     ax.margins(y=0.2)
 
     # Aggiungi la legenda sotto l'asse delle x
-    ax.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=len(labels), frameon=False)
+    ax.legend(labels, loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=len(labels), frameon=False, prop=avenir_font_path)
 
 
     # Rimuovi i bordi del grafico
@@ -60,13 +98,12 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
-
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
     #  Rimuove i bordi inutili
     plt.box(False)  
 
@@ -74,7 +111,7 @@ def generate_barre_in_pila(colors, labels, sizes, format):
     byte_io.seek(0)
     return byte_io.read()
 
-def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
+def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -86,12 +123,47 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
         bytearray: L'immagine del grafico a barre in pila come array di byte.
     """
 
+    font_path = "fonts/Figtree-Bold.ttf"
+    avenir_font_path = fm.FontProperties(fname=font_path)
+
+    if width is None or height is None or width == 0.0 or height == 0.0:
+        width = 10
+        height = 3
+    else:
+        width = width / EMU
+        height = height / EMU
+
+    if not colors or not sizes or not fasce or sizes.count(0) == len(sizes): 
+        # Genera un'immagine bianca
+        if format.lower() == 'svg':
+            # Genera un'immagine SVG bianca con una scritta in rosso
+            dwg = svgwrite.Drawing(size=(400, 300))
+            dwg.add(dwg.rect(insert=(0, 0), size=('100%', '100%'), fill='white'))
+            byte_io = io.BytesIO()
+            byte_io.write(dwg.tostring().encode('utf-8'))
+            byte_io.seek(0)
+            return byte_io.read()
+        else:
+            img = Image.new('RGB', (400, 300), color='white')
+            font_path = "fonts/Figtree-VariableFont_wght.ttf"
+            try:
+                font = ImageFont.truetype(font_path, 20)  # Carica font personalizzato
+            except IOError:
+                font = ImageFont.load_default()  # Usa font di default se non trovato
+
+            draw = ImageDraw.Draw(img)
+            draw.text((200, 150), "Nessun dato disponibile", fill="black", font=font, anchor='mm')
+            byte_io = io.BytesIO()
+            img.save(byte_io, format=format)
+            byte_io.seek(0)
+            return byte_io.read()
+
     # Calcola la somma delle dimensioni per normalizzare le percentuali
     total = sum(sizes)
     normalized_sizes = [size / total * 100 for size in sizes]
 
     # Crea il grafico a barre in pila
-    fig, ax = plt.subplots(figsize=(10, 3))  # Imposta la dimensione della figura per renderla più stretta in altezza
+    fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
     left = 0
     # for i in range(len(normalized_sizes)):
     #     ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None, height=0.6)
@@ -100,14 +172,14 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     #     left += normalized_sizes[i]
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
-        if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10)
+        if normalized_sizes[i] != 0 and i == 0:
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
     ax.set_xlim(0, 100)
     ax.set_xticks(range(0, 101, 20))
-    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)])
+    ax.set_xticklabels([f"{i}%" for i in range(0, 101, 20)], fontproperties=avenir_font_path)
     ax.set_yticks([]) 
 
     # Aggiungi margine inferiore
@@ -128,14 +200,15 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format):
     # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
     for i in range(len(fasce)):
         ax.axvline(fasce[i], color='black', linestyle='-', linewidth=1.5)
+        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
 
     # Adatta il layout del grafico
-    plt.tight_layout()
+    fig.tight_layout()
 
     # Salva l'immagine in un buffer di memoria
     byte_io = io.BytesIO()
-    plt.savefig(byte_io, format=format)
-    plt.close()
+    fig.savefig(byte_io, format=format)
+    plt.close(fig)
 
     #  Rimuove i bordi inutili
     plt.box(False)  

@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file, jsonify, make_response
 from barre_graph import generate_barre_in_pila
 from barre_graph import generate_barre_in_pila_serie_s
 from constants import UPLOAD_FOLDER
@@ -11,17 +11,27 @@ from wordcloud_graph import generate_wordcloud
 from barre_orizzontali import generate_barre_orizzontali
 from distribuzione import create_survey_chart
 from mod_office import process_file, elimina_cartella
+from generate_list import generate_list, generate_fonti_list
 import io
 import os
 from PIL import Image
 import base64
+import logging
 
 app = Flask(__name__)
+
+# Configura il logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 mime_types = {
         "png": "image/png",
         "jpg": "image/jpeg",
         "svg": "image/svg+xml",
+        "SVG": "image/svg+xml",
         "pdf": "application/pdf",
         "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -38,10 +48,48 @@ def create_wordcloud():
     word_frequencies = data.get('wordFrequencies', {})
     default_color = data.get('default_color', '#000000')
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_wordcloud(word_colors, word_frequencies, default_color, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        ## return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/create_list', methods=['POST'])
+def create_list():
+    data = request.json
+    print(data)
+    items = data.get('items', [])
+    format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
+
+    try:
+        image_bytes = generate_list(items, format, width, height)
+        return send_file(image_bytes, mimetype=mime_types[format])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/create_fonti_list', methods=['POST'])
+def create_fonti_list():
+    data = request.json
+    print(data)
+    items = data.get('items', [])
+    format = data.get('format', 'png')
+
+    try:
+        image_bytes = generate_fonti_list(items, format)
+        return send_file(image_bytes, mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -70,10 +118,20 @@ def create_barre_in_pila():
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_in_pila(colors, labels, sizes, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_barre_in_pila(colors, labels, sizes, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -85,10 +143,20 @@ def create_barre_in_pila_serie_s():
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
     fasce = data.get('fasce_confidenza', [])
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, fasce, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -100,10 +168,20 @@ def create_barre_orizzontali():
     labels = data.get('labels', [])
     sizes = data.get('sizes', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_barre_orizzontali(colors, labels, sizes, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_barre_orizzontali(colors, labels, sizes, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
    
@@ -116,11 +194,21 @@ def create_distribuzione():
     c = data.get('colors', [])
     format = data.get('format', 'png')
     cl = data.get('color_labels', [])
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
 
     try:
-        image_bytes = create_survey_chart(survey_data, cn, c, format, cl)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = create_survey_chart(survey_data, cn, c, format, cl, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -134,11 +222,21 @@ def create_pie3d():
     explode = data.get('explode', [])
     title = data.get('title', '3D Pie Chart')
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
 
     try:
-        image_bytes = generate_pie3d(colors, labels, sizes, explode, title, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -150,10 +248,20 @@ def create_dispersione():
     y = data.get('y', [])
     labels = data.get('labels', [])
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = generate_dispersione(x, y, labels, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = generate_dispersione(x, y, labels, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -167,12 +275,23 @@ def create_risk_bar():
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
+    legend_colors = data.get('legend_colors', [])
     bar_colors = data.get('bar_colors', []) 
     format = data.get('format', 'png')
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, bar_colors, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, legend_labels, legend_colors, bar_colors, format, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -185,11 +304,23 @@ def create_risk_line():
     risk_zones = data.get('risk_zones', [])
     risk_colors = data.get('risk_colors', [])
     legend_labels = data.get('legend_labels', [])
+    color_categories = data.get('color_categories', [])
     format = data.get('format', 'png')
+    is_white = data.get('is_white', False)
+    width = data.get('width', 610)
+    height = data.get('height', 180)
 
     try:
-        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, format)
-        return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
+        image_bytes = create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_labels, color_categories, format, is_white, width, height)
+        buffer = io.BytesIO(image_bytes)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[format])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Content-Disposition', 'inline; filename=wordcloud.' + format)
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(image_bytes), mimetype=mime_types[format])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -221,15 +352,25 @@ def modifica_office():
         with open(file_path, 'wb') as f:
             f.write(file)
     except Exception as e:
+        app.logger.error(f"Errore durante il salvataggio del file: {e}")
+        print(f"Errore durante il salvataggio del file: {e}", flush=True)
         return jsonify({'error': str(e)}), 500
 
     try:
         # Processare il file
         fileByte = process_file(file_path, replacements, image_replacements, replacements_for_each)
         elimina_cartella(UPLOAD_FOLDER)
-        return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
+        buffer = io.BytesIO(fileByte)
+        response = make_response(buffer.read())
+        response.headers.set('Content-Type', mime_types[ext])
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        response.headers.set('Pragma', 'no-cache')
+        response.headers.set('Expires', '0')
+        return response
+        # return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
     except Exception as e:
-        print(str(e))
+        app.logger.error(f"Errore durante la modifica del file: {e}")
+        print(str(e), flush=True)
         return jsonify({'error': str(e)}), 500
 
 

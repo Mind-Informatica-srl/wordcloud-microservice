@@ -7,3 +7,4 @@ python-pptx
 python-docx
 requests
 python-pptx-text-replacer
+svgwrite

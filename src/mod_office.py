@@ -2,48 +2,18 @@ import copy
 from pptx import Presentation
 import docx
 import os
-import requests
 import shutil
-import io
-import re
 from python_pptx_text_replacer import TextReplacer
+from PIL import Image
 
 from constants import UPLOAD_FOLDER
 from office.duplicate_and_replace_slide import duplicate_and_replace_slide
-from office.filtra_per_tipo_woseq import filtra_per_tipo_woseq
+from office.filtra_per import filtra_per
 from office.save_image import save_image
+import zipfile
 
 
-def replace_text_in_pptx(ppt, replacements, image_replacements):
-    # Sostituire i testi nei segnaposto
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                for para in shape.text_frame.paragraphs:
-                    for run in para.runs:
-                        words = run.text.split()
-                        new_text = []
-                        for word in words:
-                            for placeholder, text in replacements.items():
-                                if placeholder in word:
-                                    word = word.replace(placeholder, text)
-                            new_text.append(word)
-                        run.text = ' '.join(new_text)
-            elif shape.shape_type == 6:  # Gruppo di forme
-                for sub_shape in shape.shapes:
-                    if sub_shape.has_text_frame:
-                        for para in sub_shape.text_frame.paragraphs:
-                            for run in para.runs:
-                                words = run.text.split()
-                                new_text = []
-                                for word in words:
-                                    for placeholder, text in replacements.items():
-                                        if placeholder in word:
-                                            word = word.replace(placeholder, text)
-                                    new_text.append(word)
-                                run.text = ' '.join(new_text)
-
-
+def replace_image_in_pptx(ppt, image_replacements):
     # Sostituire le immagini
     for slide in ppt.slides:
         for shape in slide.shapes:
@@ -63,21 +33,71 @@ def replace_text_in_pptx(ppt, replacements, image_replacements):
                 for placeholder, image_path in image_replacements.items():
                     if placeholder in shape.image.filename:
                         # Posizione e dimensioni dell'immagine
-                        left, top, width, height = shape.left, shape.top, shape.width, shape.height
+                        left, top, or_width, or_height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
-                        imaga_saved = save_image(placeholder, image_path, "storage/immagini")
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                        dimfissa = or_width if or_width > or_height else or_height
+
+                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                                            height = or_height
+                                            width = or_width
+                        else:
+                            with Image.open(imaga_saved[placeholder]) as img:
+                                new_width, new_height = img.size
+
+                            # Calcolare le nuove dimensioni mantenendo il rapporto
+                            if dimfissa == or_width:
+                                width = or_width
+                                height = int(new_height * (or_width / new_width))
+                            else:
+                                height = or_height
+                                width = int(new_width * (or_height / new_height))
+
+                            if width > or_width or height > or_height:
+                                # Ridimensiona l'immagine per adattarla
+                                if width > or_width:
+                                    width = or_width
+                                    height = int(new_height * (or_width / new_width))
+                                elif height > or_height:
+                                    height = or_height
+                                    width = int(new_width * (or_height / new_height))
+
                         slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                     elif alt_text is not None and placeholder in alt_text:
                         # Posizione e dimensioni dell'immagine
-                        left, top, width, height = shape.left, shape.top, shape.width, shape.height
+                        left, top, or_width, or_height = shape.left, shape.top, shape.width, shape.height
                         # Aggiungere la nuova immagine
-                        imaga_saved = save_image(placeholder, image_path, "storage/immagini")
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                        dimfissa = or_width if or_width > or_height else or_height
+
+                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                                            height = or_height
+                                            width = or_width
+                        else:
+                            with Image.open(imaga_saved[placeholder]) as img:
+                                new_width, new_height = img.size
+
+                            # Calcolare le nuove dimensioni mantenendo il rapporto
+                            if dimfissa == or_width:
+                                width = or_width
+                                height = int(new_height * (or_width / new_width))
+                            else:
+                                height = or_height
+                                width = int(new_width * (or_height / new_height))
+
+                            if width > or_width or height > or_height:
+                                # Ridimensiona l'immagine per adattarla
+                                if width > or_width:
+                                    width = or_width
+                                    height = int(new_height * (or_width / new_width))
+                                elif height > or_height:
+                                    height = or_height
+                                    width = int(new_width * (or_height / new_height))
+
                         slide.shapes.add_picture(imaga_saved[placeholder], left, top, width, height)
                         # Rimuove l'immagine originale
                         sp = shape
                         slide.shapes._spTree.remove(sp._element)
-
-    return ppt
 
 def salva_byte_pptx(ppt):
     # Salvare il file PPTX modificato
@@ -103,32 +123,32 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
                 if placeholder in run.text:
                     run.text = run.text.replace(placeholder, text)
 
-    # Sostituire le immagini tramite testo alternativo
-    for shape in doc.inline_shapes:
-        if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
-            alt_text = shape._inline.docPr.get('descr')
-            for placeholder, image_path in image_replacements.items():
-                if alt_text and placeholder in alt_text:
-                    # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
-                    blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+    # # Sostituire le immagini tramite testo alternativo
+    # for shape in doc.inline_shapes:
+    #     if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
+    #         alt_text = shape._inline.docPr.get('descr')
+    #         for placeholder, image_path in image_replacements.items():
+    #             if alt_text and placeholder in alt_text:
+    #                 # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
+    #                 blip = shape._inline.graphic.graphicData.pic.blipFill.blip
 
-                    # Sostituisce l'immagine nel pacchetto ZIP del documento
-                    with open(image_path, "rb") as new_image_file:
-                        new_image_data = new_image_file.read()
+    #                 # Sostituisce l'immagine nel pacchetto ZIP del documento
+    #                 with open(image_path, "rb") as new_image_file:
+    #                     new_image_data = new_image_file.read()
 
-                    image_part = doc.part.related_parts[blip.embed]
-                    image_part._blob = new_image_data
-                    # paragraph = shape._inline.getparent().getparent()
+    #                 image_part = doc.part.related_parts[blip.embed]
+    #                 image_part._blob = new_image_data
+    #                 # paragraph = shape._inline.getparent().getparent()
 
-                    # # recupero le dimensioni dell'immagine
-                    # width = shape.width
-                    # height = shape.height
+    #                 # # recupero le dimensioni dell'immagine
+    #                 # width = shape.width
+    #                 # height = shape.height
 
-                    # p = paragraph.getparent()
-                    # p.remove(paragraph)
+    #                 # p = paragraph.getparent()
+    #                 # p.remove(paragraph)
 
-                    # new_run = doc.add_paragraph().add_run()
-                    # new_run.add_picture(image_path, width=width, height=height)
+    #                 # new_run = doc.add_paragraph().add_run()
+    #                 # new_run.add_picture(image_path, width=width, height=height)
                     
 
     # Salvare il file DOCX modificato
@@ -149,27 +169,81 @@ def elimina_cartella(path):
         shutil.rmtree(path)
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
-    changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
-    ppt = Presentation(file_path)
-    filtra_per_tipo_woseq(ppt, replacements)
-    for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each)
-    with open(changed_presentation, 'wb') as f:
-        ppt.save(f)
-    replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
-    replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
-    replacer.replace_text(replacements_t)
-    replacer.write_presentation_to_file(changed_presentation)
-    for for_type, sequences in for_indexes.items():
-        reps = replacements_for_each.get(for_type)
-        for sequence in sequences:
-            for ind, sliden in enumerate(sequence):
+    # Verifica il tipo di file
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".pptx":  
+        all_replacements = copy.deepcopy(replacements)
+        all_replacements.update(image_replacements)
+        changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.pptx")
+        ppt = Presentation(file_path)
+        # filtra_per(ppt, all_replacements)
+        for_indexes = duplicate_and_replace_slide(ppt, replacements_for_each, replacements["{{numero_modelli}}"], replacements["{{numero_go}}"])
+        replace_image_in_pptx(ppt, image_replacements)
+        with open(changed_presentation, 'wb') as f:
+            ppt.save(f)
+        replacements_t = [(placeholder, text) for placeholder, text in replacements.items()]
+        replacer = TextReplacer(changed_presentation, slides='', tables=True, charts=True, textframes=True)
+        try:
+            replacer.replace_text(replacements_t)
+        except KeyError as e:
+            print(f"Errore durante la sostituzione del testo: {e}", flush=True)
+        replacer.write_presentation_to_file(changed_presentation)
+        # for for_type, sequences in for_indexes.items():
+        #     reps = replacements_for_each.get(for_type)
+        #     for sequence in sequences:
+        #         for ind, sliden in enumerate(sequence):
+        #             slidenstr = str(sliden+1)
+        #             replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
+        #             rep = reps[ind]['testuali']
+        #             rep_t = [(placeholder, text) for placeholder, text in rep.items()]
+        #             replacer.replace_text(rep_t)
+        #             replacer.write_presentation_to_file(changed_presentation)
+        for for_type, num_replace, sequences in for_indexes:
+            reps = replacements_for_each.get(for_type)
+            for ind, sliden in enumerate(sequences):
                 slidenstr = str(sliden+1)
                 replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
-                rep = reps[ind]['testuali']
-                rep_t = [(placeholder, text) for placeholder, text in rep.items()]
-                replacer.replace_text(rep_t)
-                replacer.write_presentation_to_file(changed_presentation)
-            
+                if reps is None or ind >= len(reps) or len(reps) == 0:
+                    if for_type == "{{for_go:n}}":
+                        reps = [{"testuali": {"{{gruppo_omogeneo_testuale_nome}}": "", "{{go_partecipanti}}": "", "{{go_adesione}}": "", "{{gruppo_omogeneo_rischio}}": ""}}]
+                    elif for_type == "{{for_fg:n}}":
+                        reps = [{"testuali": {"{{nome_fg}}": "", }}]
+                    else:
+                        continue
+                for i in range(num_replace):
+                    index = i + (ind * num_replace)
+                    if index < len(reps):
+                        rep = reps[index]['testuali']
+                        rep_cambiato = {}
+                        for key, value in rep.items():
+                            k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
+                            rep_cambiato[k] = value
+                        rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
+                        replacer.replace_text(rep_t)
+                    else:
+                        rep = reps[0]['testuali']
+                        rep_cambiato = {}
+                        for key, value in rep.items():
+                            k = "{{" + key.replace("{{", "").replace("}}", "") + ":" + str(i+1) + "}}"
+                            rep_cambiato[k] = ""
+                        rep_t = [(placeholder, text) for placeholder, text in rep_cambiato.items()]
+                        replacer.replace_text(rep_t)
+
+                    replacer.write_presentation_to_file(changed_presentation)
+
+        ppt = Presentation(changed_presentation)
+        filtra_per(ppt, all_replacements)
+        # Salva il file PPTX modificato
+        ppt.save(changed_presentation)
+    elif ext == ".docx":
+        changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
+        docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
+        with open(changed_presentation, 'wb') as f:
+            f.write(docx_bytes)
+    else:   
+        print("Tipo di file non supportato. Supportiamo solo .pptx e .docx.")
+
     with open(changed_presentation, 'rb') as f:
         file = f.read()
     return file

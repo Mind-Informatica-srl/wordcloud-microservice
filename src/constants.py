@@ -1,1 +1,2 @@
 UPLOAD_FOLDER = "storage"
+EMU = 914400
