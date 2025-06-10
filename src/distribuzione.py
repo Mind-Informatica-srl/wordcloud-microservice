@@ -9,7 +9,7 @@ from constants import EMU
 from matplotlib import font_manager as fm
 
 
-def create_survey_chart(dataArray, category_names, colors, format, color_labels, width, height):
+def create_survey_chart(dataArray, category_names, colors, format, color_labels, width, height, fasce_basse, fasce_alte):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -107,9 +107,16 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
 
     # aggiungi una riga rossa sopra il grafico a partire all'80% dell'asse x
-    ax.axvline(x=80, color='red', linestyle='-', linewidth=2)
-    # Aggiungi un'etichetta sopra la linea rossa
-    ax.text(77, -0.8, '% rilevante \nStress alto', color='black', fontsize=12, fontweight='bold', fontproperties=avenir_font_path)
+    if not fasce_basse or not fasce_alte:
+        ax.axvline(x=80, color='red', linestyle='-', linewidth=2)
+        # Aggiungi un'etichetta sopra la linea rossa
+        ax.text(77, -0.8, '% rilevante \nStress alto', color='black', fontsize=12, fontweight='bold', fontproperties=avenir_font_path)
+    else:
+        for i in range(len(fasce_basse)):
+            ax.axvline(fasce_basse[i], color='#fe4254', linestyle='-', linewidth=1.5)
+        
+        for i in range(len(fasce_alte)):
+            ax.axvline(fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
     
     # Salvataggio e visualizzazione
     fig.tight_layout()

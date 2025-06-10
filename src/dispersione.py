@@ -69,12 +69,12 @@ def generate_dispersione(x, y, labels, format, width, height):
     metaX = 50
     metaY = 50
     texts = []
+    offset_x = 1
+    offset_y = 2
     for i, label in enumerate(labels):
         wrapped_label = "\n".join(textwrap.wrap(label, width=30))
-        # Impedisce che l'etichetta esca dai margini superiori o inferiori
-        y_text = min(max(y[i] + 0.05, 1), 97)
-        # Impedisce che l'etichetta esca dai margini laterali
-        x_text = min(max(x[i] + 0.05, 11), 90)
+        y_text = min(max(y[i] + offset_x, 1), 97)
+        x_text = min(max(x[i] + offset_y, 11), 90)
         if x[i] > metaX and y[i] > metaY:
             alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'left'}
         elif x[i] > metaX and y[i] <= metaY:
@@ -83,18 +83,12 @@ def generate_dispersione(x, y, labels, format, width, height):
             alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'right'}
         else:
             alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
-        #TODO: con questo font non si apre nel loro editor online, forse risolto con bbox_inches="tight", oppure togliendo ovunque fontproperties=avenir_font_path
-        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=10, fontweight='bold', fontproperties=avenir_font_path , **alignment))
+        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=12, fontweight='bold', fontproperties=avenir_font_path,zorder=10, **alignment))
 
-
-    # Se nell'intorno del punto ci sono altre etichette, le sposta per evitare sovrapposizioni
-    adjust_text(
-        texts, 
-        ax=ax,
-        expand_text=(1.1, 1.1),
-        force_points=0.5,
-        only_move={'text':'xy'}
-    )
+    # Sposta le etichette solo se necessario e mostra la freccia solo se serve
+    # Chiama adjust_text per spostare le etichette evitando sovrapposizioni
+    adjust_text(texts, x=x, y=y, autoalign='y', only_move={'points':'y', 'texts':'xy'}, 
+            expand_points=(1.5, 1.5), arrowprops=dict(arrowstyle='->', color='gray', lw=0.5))
 
     # Aggiunta delle linee per dividere il grafico in 4 parti uguali
     ax.axhline(y= metaY, color='lightgrey', linestyle='-', zorder=0)
@@ -106,34 +100,35 @@ def generate_dispersione(x, y, labels, format, width, height):
     quartoquadrante = 12.5
     primoquarto = quartoquadrante
     terzoquarto = 65
-    ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
-    ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=12, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=12, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
     # Aggiungi un cerchio rosso sopra l'etichetta
-    circle = patches.Ellipse((75, 102.5), width=25,height=6, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
+    circle = patches.Ellipse((75.8, 102.6), width=30,height=8, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
     ax.add_patch(circle)
-    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
-    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=12, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=12, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
 
 
 
     # Personalizzazioni
     ax.set_xlim(0, 102)
     ax.set_ylim(0, 102)
-    ax.set_xlabel("IMPORTANZA", fontsize=12, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
-    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=12, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
+    ax.set_xlabel("IMPORTANZA", fontsize=14, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
+    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=14, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
     ax.spines['top'].set_color('green')
     ax.spines['right'].set_color('green')
     ax.spines['left'].set_color('green')
     ax.spines['bottom'].set_color('green')
     ax.tick_params(axis='both', which='both', color='green')
+    ax.tick_params(axis='x', pad=12)
 
     # Imposta il colore del contorno a verde
     for spine in fig.gca().spines.values():
         spine.set_edgecolor('green')
 
     # Rimuovi le etichette degli assi
-    fig.gca().set_xticklabels([])
-    fig.gca().set_yticklabels([])
+    # fig.gca().set_xticklabels([])
+    # fig.gca().set_yticklabels([])
 
     # Titolo
     # plt.title("Distribuzione Importanza-Frequenza", fontsize=14, pad=15)
