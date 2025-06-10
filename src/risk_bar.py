@@ -124,7 +124,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             fontsize=12,
         )      
         for text, color in zip(group_legend.get_texts(), legend_colors):
-            if color != "" or color != None:
+            if color != "" and color != None:
                 text.set_color(color)
             else:
                 text.set_color("black")
