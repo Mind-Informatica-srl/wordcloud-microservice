@@ -112,16 +112,30 @@ def salva_byte_pptx(ppt):
 
     return pptx_bytes
 
+
+def delete_paragraph(paragraph):
+    p = paragraph._element
+    p.getparent().remove(p)
+    p._p = p._element = None
+
 def replace_text_in_docx(docx_path, replacements, image_replacements):
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
 
     # Sostituire i testi nei commenti
+    ind = False
     for para in doc.paragraphs:
-        for run in para.runs:
-            for placeholder, text in replacements.items():
-                if placeholder in run.text:
-                    run.text = run.text.replace(placeholder, text)
+        if para.text.startswith("{{inizio}}") and not ind:
+             ind = True
+        if para.text.startswith("{{fine}}") and ind:
+            ind = False
+            delete_paragraph(para)
+        if ind:
+             delete_paragraph(para)
+        # for run in para.runs:
+        #     for placeholder, text in replacements.items():
+        #         if placeholder in run.text:
+        #             run.text = run.text.replace(placeholder, text)
 
     # # Sostituire le immagini tramite testo alternativo
     # for shape in doc.inline_shapes:
