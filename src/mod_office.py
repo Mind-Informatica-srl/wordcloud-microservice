@@ -132,7 +132,7 @@ def append_to_doc(doc,p):
 def replace_text_in_docx(docx_path, replacements, image_replacements):
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
-    docx_replace(doc, nome="Ivan", phone="+55123456789")
+    docx_replace(doc, **replacements)
     docx_blocks(doc, signature=True)
     # Sostituire i testi nei commenti
     ind = False
