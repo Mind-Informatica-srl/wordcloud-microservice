@@ -12,6 +12,8 @@ from office.filtra_per import filtra_per
 from office.save_image import save_image
 import zipfile
 
+from python_docx_replace import docx_blocks, docx_replace
+
 
 def replace_image_in_pptx(ppt, image_replacements):
     # Sostituire le immagini
@@ -118,12 +120,23 @@ def delete_paragraph(paragraph):
     p.getparent().remove(p)
     p._p = p._element = None
 
+def append_to_doc(doc,p):
+    doc.add_paragraph("",p.style)       # add an empty paragraph in the matching style
+    for r in p.runs:
+        nr = doc.paragraphs[-1].add_run(r.text)
+        nr.style = r.style
+        nr.bold = r.bold
+        nr.italic = r.italic
+        nr.underline = r.underline
+
 def replace_text_in_docx(docx_path, replacements, image_replacements):
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
-
+    docx_replace(doc, nome="Ivan", phone="+55123456789")
+    docx_blocks(doc, signature=True)
     # Sostituire i testi nei commenti
     ind = False
+    daduplicare = []
     for para in doc.paragraphs:
         if para.text.startswith("{{inizio}}") and not ind:
              ind = True
@@ -132,6 +145,11 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
             delete_paragraph(para)
         if ind:
              delete_paragraph(para)
+        if para.text.startswith("{{duplica}}"):
+            daduplicare.append(para)
+
+    for para in daduplicare:
+         append_to_doc(doc, para)        
         # for run in para.runs:
         #     for placeholder, text in replacements.items():
         #         if placeholder in run.text:
