@@ -301,7 +301,7 @@ def elimina_cartella(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def process_file(file_path, replacements, image_replacements, replacements_for_each):
+def process_file(file_path, replacements, image_replacements, replacements_for_each, base_dir):
     # Verifica il tipo di file
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -370,7 +370,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         # Salva il file PPTX modificato
         ppt.save(changed_presentation)
     elif ext == ".docx":
-        changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
+        changed_presentation = os.path.join(base_dir, '..', 'storage', 'changed.docx')
         docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
         with open(changed_presentation, 'wb') as f:
             f.write(docx_bytes)

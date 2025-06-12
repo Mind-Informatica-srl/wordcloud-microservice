@@ -17,6 +17,7 @@ import os
 from PIL import Image
 import base64
 import logging
+import json
 
 app = Flask(__name__)
 
@@ -326,48 +327,52 @@ def create_risk_line():
     
 @app.route('/modify-office', methods=['POST'])
 def modifica_office():
-    data = request.json
-    name = data.get('name', 'pp.pptx')
-    file = data.get('file', '')
-    # decodifica il file in base64
-    file = base64.b64decode(file)
+    name = 'PARTE 3.docx'  # Nome del file da modificare
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, '..', 'storage', 'valori_request.json')  # Percorso assoluto
+    print (f"JSON Path: {json_path}", flush=True)
 
-    replacements = data.get('testuali', [])
-    # trasformo replacements in una lista di tuple con chiave e valore
-    image_replacements = data.get('immagini', [])
-    replacements_for_each = data.get('ciclici', [])
-
-    file_path = os.path.join(UPLOAD_FOLDER, name)
-    path_save = os.path.join(UPLOAD_FOLDER, 'immagini')
+    file_path = os.path.join(base_dir, '..', 'storage', name)
+    path_save = os.path.join(base_dir, '..', 'storage', 'immagini')
     os.makedirs(path_save, exist_ok=True)
     indicatori_path = os.path.join(path_save, 'indicatori')
     os.makedirs(indicatori_path, exist_ok=True)
 
-    # image_saved = save_image(image_replacements, path_save)
-    # file_byte = bytes(file, 'utf-8')
-    ext = os.path.splitext(name)[1][1:].lower()
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        replacements = data.get('testuali', [])
+        if not replacements:
+            print("Nessun testo da sostituire trovato nel file JSON.", flush=True)
+            return jsonify({'message': 'Nessun testo da sostituire trovato.'}), 200
+        print(f"Replacements: {replacements}", flush=True)
+        image_replacements = data.get('immagini', [])
+        if not image_replacements:
+            print("Nessuna immagine da sostituire trovata nel file JSON.", flush=True)
+            return jsonify({'message': 'Nessuna immagine da sostituire trovata.'}), 200
+        print(f"Image replacements: {image_replacements}", flush=True)
+        replacements_for_each = data.get('ciclici', [])
+        if not replacements_for_each:
+            print("Nessun testo ciclico da sostituire trovato nel file JSON.", flush=True)
+            return jsonify({'message': 'Nessun testo ciclico da sostituire trovato.'}), 200
+        print(f"Replacements for each: {replacements_for_each}", flush=True)
+    except Exception as e:
+        print(f"Errore nel caricamento del JSON: {e}", flush=True)
+        return
     
 
     try:
-        with open(file_path, 'wb') as f:
-            f.write(file)
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
     except Exception as e:
-        app.logger.error(f"Errore durante il salvataggio del file: {e}")
-        print(f"Errore durante il salvataggio del file: {e}", flush=True)
-        return jsonify({'error': str(e)}), 500
+        print(f"Errore nella lettura del file: {e}", flush=True)
+        return
 
     try:
         # Processare il file
-        fileByte = process_file(file_path, replacements, image_replacements, replacements_for_each)
-        elimina_cartella(UPLOAD_FOLDER)
-        buffer = io.BytesIO(fileByte)
-        response = make_response(buffer.read())
-        response.headers.set('Content-Type', mime_types[ext])
-        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        response.headers.set('Pragma', 'no-cache')
-        response.headers.set('Expires', '0')
-        return response
-        # return send_file(io.BytesIO(fileByte), mimetype=mime_types[ext])
+        fileByte = process_file(file_path, replacements, image_replacements, replacements_for_each, base_dir)
+        # elimina_cartella(UPLOAD_FOLDER)
+        return fileByte
     except Exception as e:
         app.logger.error(f"Errore durante la modifica del file: {e}")
         print(str(e), flush=True)
