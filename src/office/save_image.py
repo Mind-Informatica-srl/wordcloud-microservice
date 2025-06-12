@@ -2,7 +2,7 @@ import os
 
 import requests
 
-
+BASE_URL = "https://perwork.perlab.net"
 def save_image(key, url, image_path, width, height):
     """
     in image ho una mappa stringa stringa
@@ -13,10 +13,11 @@ def save_image(key, url, image_path, width, height):
     saved_images = {
         # "{{immagine_prova1}}": "storage/immagini/image1.png"
     }
+    print(f"Sto per salvare l'immagine '{key}' da '{url}' in '{image_path}' con dimensioni {width}x{height}")
     if key != "{{azioni_miglioramento_proposte}}" and key != "{{semaforo_gruppo_omogeneo}}" and key != "{{eventi_gruppo_omogeneo}}" and key != "{{indicatori_eventi}}":
-        url = os.getenv("BASE_URL") + url + f"&width={width}&height={height}"
+        url = BASE_URL + url + f"&width={width}&height={height}"
     else:
-        url = os.getenv("BASE_URL") + url + f"?width={width}&height={height}"
+        url = BASE_URL + url + f"?width={width}&height={height}"
     print(f"Sto per chiamare '{url}'")
     
 

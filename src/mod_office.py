@@ -370,6 +370,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         # Salva il file PPTX modificato
         ppt.save(changed_presentation)
     elif ext == ".docx":
+        print(f"Sto per processare il file {file_path}", flush=True)
         changed_presentation = os.path.join(base_dir, '..', 'storage', 'changed.docx')
         docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
         with open(changed_presentation, 'wb') as f:
