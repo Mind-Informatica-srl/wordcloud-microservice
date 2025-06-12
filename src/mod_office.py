@@ -1,6 +1,7 @@
 import copy
 from pptx import Presentation
 import docx
+from docx import Document
 import os
 import shutil
 from python_pptx_text_replacer import TextReplacer
@@ -11,6 +12,8 @@ from office.duplicate_and_replace_slide import duplicate_and_replace_slide
 from office.filtra_per import filtra_per
 from office.save_image import save_image
 import zipfile
+import xml.etree.ElementTree as ET
+from docx.shared import Inches
 
 from python_docx_replace import docx_blocks, docx_replace
 
@@ -130,6 +133,7 @@ def append_to_doc(doc,p):
         nr.underline = r.underline
 
 def replace_text_in_docx(docx_path, replacements, image_replacements):
+    # print_runs_in_docx(docx_path)
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
     docx_replace(doc, **replacements)
@@ -150,37 +154,9 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
 
     for para in daduplicare:
          append_to_doc(doc, para)        
-        # for run in para.runs:
-        #     for placeholder, text in replacements.items():
-        #         if placeholder in run.text:
-        #             run.text = run.text.replace(placeholder, text)
-
+    
     # # Sostituire le immagini tramite testo alternativo
-    # for shape in doc.inline_shapes:
-    #     if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
-    #         alt_text = shape._inline.docPr.get('descr')
-    #         for placeholder, image_path in image_replacements.items():
-    #             if alt_text and placeholder in alt_text:
-    #                 # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
-    #                 blip = shape._inline.graphic.graphicData.pic.blipFill.blip
-
-    #                 # Sostituisce l'immagine nel pacchetto ZIP del documento
-    #                 with open(image_path, "rb") as new_image_file:
-    #                     new_image_data = new_image_file.read()
-
-    #                 image_part = doc.part.related_parts[blip.embed]
-    #                 image_part._blob = new_image_data
-    #                 # paragraph = shape._inline.getparent().getparent()
-
-    #                 # # recupero le dimensioni dell'immagine
-    #                 # width = shape.width
-    #                 # height = shape.height
-
-    #                 # p = paragraph.getparent()
-    #                 # p.remove(paragraph)
-
-    #                 # new_run = doc.add_paragraph().add_run()
-    #                 # new_run.add_picture(image_path, width=width, height=height)
+    replace_image_in_docx(doc, image_replacements)
                     
 
     # Salvare il file DOCX modificato
@@ -195,6 +171,131 @@ def replace_text_in_docx(docx_path, replacements, image_replacements):
         docx_bytes = f.read()
 
     return docx_bytes
+
+def print_runs_in_docx(docx_path):
+    doc = Document(docx_path)
+    for i, paragraph in enumerate(doc.paragraphs):
+        print(f"Paragrafo {i} XML completo:\n{paragraph._element.xml}\n")
+
+
+def replace_image_in_docx(doc, image_replacements):
+    #######################
+    for shape in doc.inline_shapes:
+        if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
+            alt_text = shape._inline.docPr.get('descr')
+            if alt_text is not None:
+                for placeholder, image_path in image_replacements.items():
+                    if placeholder in alt_text:
+                        or_width, or_height = shape.width, shape.height
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                        # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
+                        # blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+
+                        dimfissa = or_width if or_width > or_height else or_height
+
+                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                                            height = or_height
+                                            width = or_width
+                        else:
+                            with Image.open(imaga_saved[placeholder]) as img:
+                                new_width, new_height = img.size
+
+                            # Calcolare le nuove dimensioni mantenendo il rapporto
+                            if dimfissa == or_width:
+                                width = or_width
+                                height = int(new_height * (or_width / new_width))
+                            else:
+                                height = or_height
+                                width = int(new_width * (or_height / new_height))
+
+                            if width > or_width or height > or_height:
+                                # Ridimensiona l'immagine per adattarla
+                                if width > or_width:
+                                    width = or_width
+                                    height = int(new_height * (or_width / new_width))
+                                elif height > or_height:
+                                    height = or_height
+                                    width = int(new_width * (or_height / new_height))
+
+                        # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
+                        blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+
+                        # Sostituisce l'immagine nel pacchetto ZIP del documento
+                        with open(imaga_saved[placeholder], "rb") as new_image_file:
+                            new_image_data = new_image_file.read()
+
+                        image_part = doc.part.related_parts[blip.embed]
+                        image_part._blob = new_image_data
+
+
+                        # # Rimuove immagine esistente
+                        # drawing_element = shape._inline
+                        # drawing_parent = drawing_element.getparent()
+                        # drawing_parent.remove(drawing_element)
+                        # # Trova il paragrafo corrispondente e aggiunge la nuova immagine
+                        # paragraph = None
+                        # for para in doc.paragraphs:
+                        #     if shape._inline in [r._element for r in para.runs]:
+                        #         paragraph = para
+                        #         break
+                            
+                        # if paragraph:
+                        #     run = paragraph.add_run()
+                        #     run.add_picture(image_path, width=width, height=height)
+    ##########################
+    # for paragraph in doc.paragraphs:
+    #     for run in paragraph.runs:
+    #         drawing_elements = run._element.xpath('.//pic:cNvPr[@descr]')
+    #         if drawing_elements:
+    #             descr_elem = drawing_elements[0]
+    #             alt_text = descr_elem.get("descr")
+
+    #             for placeholder, image_url in image_replacements.items():
+    #                 if placeholder in alt_text:
+    #                     # Dimensioni originali (approssimate)
+    #                     shape = next((s for s in doc.inline_shapes if s._inline.docPr.get('descr') == alt_text), None)
+    #                     if shape:
+    #                         or_width = shape.width
+    #                         or_height = shape.height
+    #                     else:
+    #                         or_width = Inches(2)
+    #                         or_height = Inches(2)
+
+    #                     # Scarica immagine e salvala
+    #                     saved = save_image(placeholder, image_url, "storage/immagini", width=or_width, height=or_height)
+    #                     image_path = saved[placeholder]
+
+    #                     # Calcola proporzioni
+    #                     if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+    #                         width = or_width
+    #                         height = or_height
+    #                     else:
+    #                         with Image.open(image_path) as img:
+    #                             new_width, new_height = img.size
+    #                         dimfissa = max(or_width, or_height)
+
+    #                         if dimfissa == or_width:
+    #                             width = or_width
+    #                             height = int(new_height * (or_width / new_width))
+    #                         else:
+    #                             height = or_height
+    #                             width = int(new_width * (or_height / new_height))
+
+    #                         # Limita alle dimensioni originali
+    #                         if width > or_width:
+    #                             width = or_width
+    #                             height = int(new_height * (or_width / new_width))
+    #                         if height > or_height:
+    #                             height = or_height
+    #                             width = int(new_width * (or_height / new_height))
+
+    #                     # Rimuove il run esistente (contenente l'immagine)
+    #                     paragraph._element.remove(run._element)
+
+    #                     # Inserisce nuova immagine nella stessa posizione
+    #                     new_run = paragraph.add_run()
+    #                     new_run.add_picture(image_path, width=width, height=height)
+
 
 def elimina_cartella(path):
     if os.path.exists(path):
