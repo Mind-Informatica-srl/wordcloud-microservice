@@ -11,9 +11,8 @@ from constants import UPLOAD_FOLDER
 from office.duplicate_and_replace_slide import duplicate_and_replace_slide
 from office.filtra_per import filtra_per
 from office.save_image import save_image
-import zipfile
-import xml.etree.ElementTree as ET
-from docx.shared import Inches
+import re
+import io
 
 from python_docx_replace import docx_blocks, docx_replace
 
@@ -132,28 +131,64 @@ def append_to_doc(doc,p):
         nr.italic = r.italic
         nr.underline = r.underline
 
-def replace_text_in_docx(docx_path, replacements, image_replacements):
+def duplica_blocchi_paragrafi(doc, replacements_for_each):
+    if replacements_for_each is None or len(replacements_for_each) == 0:
+        print("Nessun blocco di paragrafi da duplicare.")
+        return
+    
+    i = 0
+    while i < len(doc.paragraphs):
+        para = doc.paragraphs[i]
+        if para.text.startswith("{{duplica:}}"):
+             print("Trovato inizio blocco di duplicazione", i)
+        match = re.match(r"\{\{duplica:(\d+)\}\}", para.text.strip())
+        if match:
+            n = int(match.group(1))
+            start_idx = i
+            # Trova la fine del blocco
+            end_idx = None
+            for j in range(i+1, len(doc.paragraphs)):
+                if doc.paragraphs[j].text.strip() == "{{fine_duplica}}":
+                    end_idx = j
+                    break
+            if end_idx is None:
+                i += 1
+                continue  # Nessuna fine trovata, ignora
+
+            # Copia i paragrafi del blocco (esclude marker)
+            blocco = [doc.paragraphs[k] for k in range(start_idx+1, end_idx)]
+            # Duplicazione
+            insert_pos = end_idx + 1  # Dopo il blocco originale e il marker di fine
+            for _ in range(n):
+                for p in blocco:
+                    new_par = doc.add_paragraph("", p.style)
+                    for r in p.runs:
+                        nr = new_par.add_run(r.text)
+                        nr.style = r.style
+                        nr.bold = r.bold
+                        nr.italic = r.italic
+                        nr.underline = r.underline
+                    # Sposta il nuovo paragrafo nella posizione corretta
+                    body = doc._body._element
+                    body.remove(new_par._element)
+                    body.insert(insert_pos, new_par._element)
+                    insert_pos += 1
+            # Rimuovi i marker
+            delete_paragraph(doc.paragraphs[end_idx])
+            delete_paragraph(doc.paragraphs[start_idx])
+            # Aggiorna l'indice per saltare i duplicati appena inseriti
+            i = start_idx + len(blocco)
+        else:
+            i += 1
+
+def replace_text_in_docx(docx_path, replacements, image_replacements, replacements_for_each):
     # print_runs_in_docx(docx_path)
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
     docx_replace(doc, **replacements)
-    docx_blocks(doc, signature=True)
-    # Sostituire i testi nei commenti
-    ind = False
-    daduplicare = []
-    for para in doc.paragraphs:
-        if para.text.startswith("{{inizio}}") and not ind:
-             ind = True
-        if para.text.startswith("{{fine}}") and ind:
-            ind = False
-            delete_paragraph(para)
-        if ind:
-             delete_paragraph(para)
-        if para.text.startswith("{{duplica}}"):
-            daduplicare.append(para)
+    docx_blocks(doc, signature=True)    
 
-    for para in daduplicare:
-         append_to_doc(doc, para)        
+    duplica_blocchi_paragrafi(doc, replacements_for_each)
     
     # # Sostituire le immagini tramite testo alternativo
     replace_image_in_docx(doc, image_replacements)
@@ -371,7 +406,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
         ppt.save(changed_presentation)
     elif ext == ".docx":
         changed_presentation = os.path.join(UPLOAD_FOLDER, "changed.docx")
-        docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements)
+        docx_bytes = replace_text_in_docx(file_path, replacements, image_replacements, replacements_for_each)
         with open(changed_presentation, 'wb') as f:
             f.write(docx_bytes)
     else:   
