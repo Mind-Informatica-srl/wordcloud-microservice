@@ -8,13 +8,14 @@ from python_pptx_text_replacer import TextReplacer
 from PIL import Image
 
 from constants import UPLOAD_FOLDER
-from office.duplicate_and_replace_slide import duplicate_and_replace_slide
+from office.duplicate_and_replace_slide import duplicate_and_replace_slide, extract_placeholder_info
 from office.filtra_per import filtra_per
 from office.save_image import save_image
 import re
 import io
 
 from python_docx_replace import docx_blocks, docx_replace
+from python_docx_replace.paragraph import Paragraph
 
 
 def replace_image_in_pptx(ppt, image_replacements):
@@ -139,16 +140,20 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
     i = 0
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
-        if para.text.startswith("{{duplica:}}"):
-             print("Trovato inizio blocco di duplicazione", i)
-        match = re.match(r"\{\{duplica:(\d+)\}\}", para.text.strip())
+        if para.text.startswith("{{for_fg:") or para.text.startswith("{{for_go:"):
+            if para.text.startswith("{{for_fg:"):
+                forplaceholder = "for_fg"
+            else:
+                forplaceholder = "for_go"
+            print("Trovato inizio blocco di duplicazione", i)
+        match = re.match(r"{{for_(fg|go):(\d+)}}", para.text.strip())
         if match:
             n = int(match.group(1))
             start_idx = i
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip() == "{{fine_duplica}}":
+                if doc.paragraphs[j].text.strip() == "{{fine_for_fg:" or doc.paragraphs[j].text.strip() == "{{fine_for_go:":
                     end_idx = j
                     break
             if end_idx is None:
@@ -159,7 +164,10 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
             blocco = [doc.paragraphs[k] for k in range(start_idx+1, end_idx)]
             # Duplicazione
             insert_pos = end_idx + 1  # Dopo il blocco originale e il marker di fine
-            for _ in range(n):
+            replacements = replacements_for_each[forplaceholder]
+            for dup_idx in range(n):
+                rep = replacements[(dup_idx + 1)] if dup_idx < len(replacements) else replacements[0]
+                # Ottieni i replacements per questa duplicazione (se presenti)
                 for p in blocco:
                     new_par = doc.add_paragraph("", p.style)
                     for r in p.runs:
@@ -168,6 +176,46 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                         nr.bold = r.bold
                         nr.italic = r.italic
                         nr.underline = r.underline
+                    paragraph_obj = Paragraph(nr)
+                    for key, value in rep["testuali"].items():
+                        paragraph_obj.replace_key(key, str(value))
+                    # Aggiorna eventuali immagini nel paragrafo
+                    # Copia solo le immagini associate a questo paragrafo
+                    for shape in doc.inline_shapes:
+                        # Verifica se l'immagine è nel paragrafo corrente
+                        parent = shape._inline.getparent()
+                        while parent is not None and parent != p._element:
+                            parent = parent.getparent()
+                        if parent == p._element:
+                            alt_text = shape._inline.docPr.get('descr')
+                            if alt_text:
+                                new_alt = re.sub(
+                                    r"(\{\{[a-zA-Z0-9_]+:)\d+(\}\})",
+                                    lambda m: f"{m.group(1)}{dup_idx + 2}{m.group(2)}",
+                                    alt_text
+                                )
+                            else:
+                                new_alt = None
+                            
+                            info = extract_placeholder_info(new_alt)
+                            if info is not None:
+                                for placeholder, image_path in rep["immagini"].items():
+                                    if placeholder in info:
+                                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=shape.width, height=shape.height)
+                                        new_alt = ""
+                                        
+                            width, height = shape.width, shape.height
+                            # blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                            with open(imaga_saved[placeholder], "rb") as img_file:
+                                 new_image_data = img_file.read()
+
+                            run_img = new_par.add_run()
+                            run_img.add_picture(new_image_data, width=width, height=height)
+                            # image_part = doc.part.related_parts[blip.embed]
+                            # image_part._blob = new_image_data
+                            last_shape = doc.inline_shapes[-1]
+                            if new_alt:
+                                last_shape._inline.docPr.set('descr', new_alt)
                     # Sposta il nuovo paragrafo nella posizione corretta
                     body = doc._body._element
                     body.remove(new_par._element)
@@ -186,7 +234,8 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
     docx_replace(doc, **replacements)
-    docx_blocks(doc, signature=True)    
+    valuta_if_docx(doc, replacements)
+    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)    
 
     duplica_blocchi_paragrafi(doc, replacements_for_each)
     
@@ -335,6 +384,58 @@ def replace_image_in_docx(doc, image_replacements):
 def elimina_cartella(path):
     if os.path.exists(path):
         shutil.rmtree(path)
+
+
+def valuta_if_docx(doc, replacements):
+    """
+    Valuta se il documento contiene blocchi di paragrafi da rimuovere o mantenere.
+    Se il documento contiene blocchi di paragrafi che iniziano con {{if:placeholder:condition}}
+    e terminano con {{fine_if:placeholder}}, verifica se la condizione è soddisfatta.
+    se la condizione non è soddisfatta, sostituisce {{if:placeholder:condition}} e {{fine_if:placeholder}} con 
+    dei tag <da_rimuovere> e </da_rimuovere> per poterli rimuovere successivamente.
+    Se la condizione è soddisfatta, sostituisce {{if:placeholder:condition}} con
+    <da_mantenere> e </da_mantenere> per poterli mantenere successivamente.
+    """
+    i = 0
+    while i < len(doc.paragraphs):
+        para = doc.paragraphs[i]
+        if para.text.strip().startswith("{{if:") and para.text.strip().endswith("}}"):
+            # Estrai placeholder e condizione
+            match = re.match(r"\{\{if:([^\}:]+):([^\}]+)\}\}", para.text.strip())
+            if not match:
+                i += 1
+                continue
+            placeholder, condizione = match.group(1), match.group(2)
+            ph = "{{" + placeholder + "}}"
+            # Trova la fine del blocco
+            end_idx = None
+            for j in range(i+1, len(doc.paragraphs)):
+                if doc.paragraphs[j].text.strip() == f"{{{{fine_if:{placeholder}}}}}":
+                    end_idx = j
+                    break
+            if end_idx is None:
+                i += 1
+                continue  # Nessuna fine trovata, ignora
+
+            # Valuta la condizione
+            soddisfatta = False
+            if condizione == "*":
+                soddisfatta = ph in replacements and replacements[ph] not in [None, ""]
+            elif condizione == "":
+                soddisfatta = ph in replacements and replacements[ph] == ""
+            else:
+                soddisfatta = ph in replacements and replacements[ph] == condizione
+
+            # Sostituisci i marker
+            if soddisfatta:
+                doc.paragraphs[i].text = "<da_mantenere>"
+                doc.paragraphs[end_idx].text = "</da_mantenere>"
+            else:
+                doc.paragraphs[i].text = "<da_rimuovere>"
+                doc.paragraphs[end_idx].text = "</da_rimuovere>"
+            i = end_idx + 1
+        else:
+            i += 1
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
     # Verifica il tipo di file
