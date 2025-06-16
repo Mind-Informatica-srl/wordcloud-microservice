@@ -13,6 +13,7 @@ from office.filtra_per import filtra_per
 from office.save_image import save_image
 import re
 import io
+import subprocess
 
 from python_docx_replace import docx_blocks, docx_replace
 from python_docx_replace.paragraph import Paragraph
@@ -131,6 +132,7 @@ def append_to_doc(doc,p):
         nr.bold = r.bold
         nr.italic = r.italic
         nr.underline = r.underline
+
 
 def duplica_blocchi_paragrafi(doc, replacements_for_each):
     if replacements_for_each is None or len(replacements_for_each) == 0:
@@ -264,6 +266,31 @@ def print_runs_in_docx(docx_path):
     for i, paragraph in enumerate(doc.paragraphs):
         print(f"Paragrafo {i} XML completo:\n{paragraph._element.xml}\n")
 
+def aggiorna_toc_con_libreoffice(input_path, output_path=None):
+    """
+    Aggiorna automaticamente il sommario di un file .docx usando LibreOffice in modalità headless.
+    Se output_path non è specificato, il file aggiornato verrà salvato nella stessa cartella di input.
+    """
+    if output_path is None:
+        output_dir = os.path.dirname(input_path)
+    else:
+        output_dir = os.path.dirname(output_path)
+    # Comando per convertire e aggiornare i campi (incluso il TOC)
+    cmd = [
+        "soffice",
+        "--headless",
+        "--convert-to", "docx",
+        "--outdir", output_dir,
+        input_path
+    ]
+    subprocess.run(cmd, check=True)
+    # Il file convertito avrà lo stesso nome base
+    base_name = os.path.basename(input_path)
+    converted_path = os.path.join(output_dir, base_name.replace(".docx", ".docx"))
+    # Se serve, rinomina il file di output
+    if output_path and converted_path != output_path:
+        os.rename(converted_path, output_path)
+    return output_path or converted_path
 
 def replace_image_in_docx(doc, image_replacements):
     #######################
