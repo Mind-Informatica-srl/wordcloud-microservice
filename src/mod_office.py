@@ -163,8 +163,8 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
             # Copia i paragrafi del blocco (esclude marker)
             blocco = [doc.paragraphs[k] for k in range(start_idx+1, end_idx)]
             # Duplicazione
-            insert_pos = end_idx + 1  # Dopo il blocco originale e il marker di fine
             replacements = replacements_for_each[forplaceholder]
+            nuovi_paragrafi = []
             for dup_idx in range(n):
                 rep = replacements[dup_idx] if dup_idx < len(replacements) else replacements[0]
                 # Ottieni i replacements per questa duplicazione (se presenti)
@@ -176,7 +176,7 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                         nr.bold = r.bold
                         nr.italic = r.italic
                         nr.underline = r.underline
-                    paragraph_obj = Paragraph(nr)
+                    paragraph_obj = Paragraph(new_par)
                     for key, value in rep["testuali"].items():
                         paragraph_obj.replace_key(key, str(value))
                     # Aggiorna eventuali immagini nel paragrafo
@@ -216,16 +216,19 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                                 last_shape = doc.inline_shapes[-1]
                                 if new_alt:
                                     last_shape._inline.docPr.set('descr', new_alt)
-                    # Sposta il nuovo paragrafo nella posizione corretta
-                    body = doc._body._element
-                    body.remove(new_par._element)
-                    body.insert(insert_pos, new_par._element)
-                    insert_pos += 1
-            # Rimuovi i marker
-            delete_paragraph(doc.paragraphs[end_idx])
-            delete_paragraph(doc.paragraphs[start_idx])
+                    nuovi_paragrafi.append(new_par)
+            # Rimuovi il blocco originale (compresi i marker)
+            for idx in range(end_idx, start_idx - 1, -1):
+                delete_paragraph(doc.paragraphs[idx])
+
+            # Inserisci i nuovi paragrafi al posto del blocco originale
+            body = doc._body._element
+            insert_pos = start_idx
+            for new_par in nuovi_paragrafi:
+                body.insert(insert_pos, new_par._element)
+                insert_pos += 1
             # Aggiorna l'indice per saltare i duplicati appena inseriti
-            i = start_idx + len(blocco)
+            i = start_idx + len(nuovi_paragrafi)
         else:
             i += 1
 
