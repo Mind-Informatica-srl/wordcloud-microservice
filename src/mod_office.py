@@ -142,18 +142,18 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
         para = doc.paragraphs[i]
         if para.text.startswith("{{for_fg:") or para.text.startswith("{{for_go:"):
             if para.text.startswith("{{for_fg:"):
-                forplaceholder = "for_fg"
+                forplaceholder = "{{for_fg:n}}"
             else:
-                forplaceholder = "for_go"
+                forplaceholder = "{{for_go:n}}"
             print("Trovato inizio blocco di duplicazione", i)
         match = re.match(r"{{for_(fg|go):(\d+)}}", para.text.strip())
         if match:
-            n = int(match.group(1))
+            n = int(match.group(2))
             start_idx = i
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip() == "{{fine_for_fg:" or doc.paragraphs[j].text.strip() == "{{fine_for_go:":
+                if doc.paragraphs[j].text.strip() == "{{fine_for_fg}}" or doc.paragraphs[j].text.strip() == "{{fine_for_go}}":
                     end_idx = j
                     break
             if end_idx is None:
@@ -166,7 +166,7 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
             insert_pos = end_idx + 1  # Dopo il blocco originale e il marker di fine
             replacements = replacements_for_each[forplaceholder]
             for dup_idx in range(n):
-                rep = replacements[(dup_idx + 1)] if dup_idx < len(replacements) else replacements[0]
+                rep = replacements[dup_idx] if dup_idx < len(replacements) else replacements[0]
                 # Ottieni i replacements per questa duplicazione (se presenti)
                 for p in blocco:
                     new_par = doc.add_paragraph("", p.style)
@@ -204,18 +204,18 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                                         imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=shape.width, height=shape.height)
                                         new_alt = ""
                                         
-                            width, height = shape.width, shape.height
-                            # blip = shape._inline.graphic.graphicData.pic.blipFill.blip
-                            with open(imaga_saved[placeholder], "rb") as img_file:
-                                 new_image_data = img_file.read()
+                                width, height = shape.width, shape.height
+                                # blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                                with open(imaga_saved[info[1]], "rb") as img_file:
+                                     new_image_data = img_file.read()
 
-                            run_img = new_par.add_run()
-                            run_img.add_picture(new_image_data, width=width, height=height)
-                            # image_part = doc.part.related_parts[blip.embed]
-                            # image_part._blob = new_image_data
-                            last_shape = doc.inline_shapes[-1]
-                            if new_alt:
-                                last_shape._inline.docPr.set('descr', new_alt)
+                                run_img = new_par.add_run()
+                                run_img.add_picture(io.BytesIO(new_image_data), width=width, height=height)
+                                # image_part = doc.part.related_parts[blip.embed]
+                                # image_part._blob = new_image_data
+                                last_shape = doc.inline_shapes[-1]
+                                if new_alt:
+                                    last_shape._inline.docPr.set('descr', new_alt)
                     # Sposta il nuovo paragrafo nella posizione corretta
                     body = doc._body._element
                     body.remove(new_par._element)
