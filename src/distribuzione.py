@@ -9,7 +9,7 @@ from constants import EMU
 from matplotlib import font_manager as fm
 
 
-def create_survey_chart(dataArray, category_names, colors, format, color_labels, width, height, fasce_basse, fasce_alte):
+def create_survey_chart(dataArray, category_names, colors, format, color_labels, width, height, fasce_basse, fasce_alte, cod_domanda):
     """
     Crea un grafico a barre orizzontali a partire dai dati forniti.
 
@@ -114,9 +114,12 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     else:
         for i in range(len(fasce_basse)):
             ax.axvline(fasce_basse[i], color='#fe4254', linestyle='-', linewidth=1.5)
-        
-        for i in range(len(fasce_alte)):
-            ax.axvline(fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
+        if cod_domanda != 'C4':
+            for i in range(len(fasce_alte)):
+                ax.axvline(100 - fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
+        else:
+            for i in range(len(fasce_alte)):
+                ax.axvline(fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
     
     # Salvataggio e visualizzazione
     fig.tight_layout()
