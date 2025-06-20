@@ -13,7 +13,7 @@ def save_image(key, url, image_path, width, height):
     saved_images = {
         # "{{immagine_prova1}}": "storage/immagini/image1.png"
     }
-    if key != "{{azioni_miglioramento_proposte}}" and key != "{{semaforo_gruppo_omogeneo}}" and key != "{{eventi_gruppo_omogeneo}}" and key != "{{indicatori_eventi}}":
+    if key != "{{azioni_miglioramento_proposte}}" and key != "{{semaforo_gruppo_omogeneo}}" and key != "{{eventi_gruppo_omogeneo}}" and key != "{{indicatori_eventi}}" and key != "{{spiegazione_evento_go}}":
         url = os.getenv("BASE_URL") + url + f"&width={width}&height={height}"
     else:
         url = os.getenv("BASE_URL") + url + f"?width={width}&height={height}"

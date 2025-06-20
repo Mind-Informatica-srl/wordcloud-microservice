@@ -218,6 +218,18 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                                 last_shape = doc.inline_shapes[-1]
                                 if new_alt:
                                     last_shape._inline.docPr.set('descr', new_alt)
+                            else:
+                                width, height = shape.width, shape.height
+                                blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                                image_part = doc.part.related_parts[blip.embed]
+                                original_image_data = image_part.blob
+
+                                run_img = new_par.add_run()
+                                run_img.add_picture(io.BytesIO(original_image_data), width=width, height=height)
+                                # Copia anche l'alt text originale, se presente
+                                if alt_text:
+                                    last_shape = doc.inline_shapes[-1]
+                                    last_shape._inline.docPr.set('descr', alt_text)
                     nuovi_paragrafi.append(new_par)
             # Rimuovi il blocco originale (compresi i marker)
             for idx in range(end_idx, start_idx - 1, -1):
@@ -231,6 +243,7 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                 insert_pos += 1
             # Aggiorna l'indice per saltare i duplicati appena inseriti
             i = start_idx + len(nuovi_paragrafi)
+
         else:
             i += 1
 
@@ -239,13 +252,12 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     # Caricare il file DOCX
     doc = docx.Document(docx_path)
     docx_replace(doc, **replacements)
-    valuta_if_docx(doc, replacements)
-    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)    
-
     duplica_blocchi_paragrafi(doc, replacements_for_each)
     
     # # Sostituire le immagini tramite testo alternativo
     replace_image_in_docx(doc, image_replacements)
+    valuta_if_docx(doc, replacements)
+    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)    
                     
 
     # Salvare il file DOCX modificato
@@ -292,6 +304,10 @@ def aggiorna_toc_con_libreoffice(input_path, output_path=None):
         os.rename(converted_path, output_path)
     return output_path or converted_path
 
+def pixel_to_emu(pixels, dpi=96):
+    # 1 pollice = 914400 EMU, 1 pollice = dpi pixel
+    return int(pixels * 914400 / dpi)
+
 def replace_image_in_docx(doc, image_replacements):
     #######################
     for shape in doc.inline_shapes:
@@ -313,6 +329,9 @@ def replace_image_in_docx(doc, image_replacements):
                         else:
                             with Image.open(imaga_saved[placeholder]) as img:
                                 new_width, new_height = img.size
+
+                            new_width = pixel_to_emu(new_width)
+                            new_height = pixel_to_emu(new_height)
 
                             # Calcolare le nuove dimensioni mantenendo il rapporto
                             if dimfissa == or_width:
@@ -440,7 +459,7 @@ def valuta_if_docx(doc, replacements):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip() == f"{{{{fine_if:{placeholder}}}}}":
+                if doc.paragraphs[j].text.strip().endswith("{{fine_if:" + placeholder + "}}"):
                     end_idx = j
                     break
             if end_idx is None:
@@ -466,6 +485,54 @@ def valuta_if_docx(doc, replacements):
             i = end_idx + 1
         else:
             i += 1
+
+def valuta_if_blocco(blocco, replacements):
+    """
+    Valuta se il blocco contiene paragrafi da rimuovere o mantenere.
+    Sostituisce i marker {{if:placeholder:condition}} e {{fine_if:placeholder}}
+    con <da_mantenere>/<da_rimuovere> e </da_mantenere>/</da_rimuovere> in base alla condizione.
+    """
+    i = 0
+    while i < len(blocco):
+        para = blocco[i]
+        if para.text.strip().startswith("{{if:") and para.text.strip().endswith("}}"):
+            match = re.match(r"\{\{if:([^\}:]+):([^\}]+)\}\}", para.text.strip())
+            if not match:
+                i += 1
+                continue
+            placeholder, condizione = match.group(1), match.group(2)
+            ph = "{{" + placeholder + "}}"
+            # Trova la fine del blocco
+            end_idx = None
+            for j in range(i+1, len(blocco)):
+                if blocco[j].text.strip().endswith("{{fine_if:" + placeholder + "}}"):
+                    end_idx = j
+                    break
+            if end_idx is None:
+                i += 1
+                continue
+
+            # Valuta la condizione
+            soddisfatta = False
+            if condizione == "*":
+                soddisfatta = ph in replacements and replacements[ph] not in [None, ""]
+            elif condizione == "":
+                soddisfatta = ph in replacements and replacements[ph] == ""
+            else:
+                soddisfatta = ph in replacements and replacements[ph] == condizione
+
+            # Sostituisci i marker
+            if soddisfatta:
+                blocco[i].text = "<da_mantenere>"
+                blocco[end_idx].text = "</da_mantenere>"
+            else:
+                blocco[i].text = "<da_rimuovere>"
+                blocco[end_idx].text = "</da_rimuovere>"
+            i = end_idx + 1
+        else:
+            i += 1
+
+    return blocco
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
     # Verifica il tipo di file
