@@ -1,4 +1,6 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
@@ -31,6 +33,8 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not categories or not values or not risk_zones or not risk_colors or not legend_labels or len(values) == 0 or all(value == 0 for value in values) or is_white:
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -70,11 +74,11 @@ def create_risk_line_chart(categories, values, risk_zones, risk_colors, legend_l
 
     # Aggiungi i valori sopra i punti
     for x, y in zip(x_positions, values):
-        ax.text(x, y + 3, f"{y:.2f}", ha="center", fontsize=12, color="black", fontweight="bold", fontproperties=avenir_font_path)
+        ax.text(x, y + 3, f"{y:.2f}", ha="center", fontsize=font_size, color="black", fontweight="bold", fontproperties=avenir_font_path)
 
     # Configura assi e legenda
     ax.set_xticks(x_positions)
-    ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right", fontsize=12, fontweight="bold", fontproperties=avenir_font_path)
+    ax.set_xticklabels([label.replace("'\n'", "\n") for label in categories], rotation=45, ha="right", fontsize=font_size, fontweight="bold", fontproperties=avenir_font_path)
     for tick_label, color in zip(ax.get_xticklabels(), color_categories):
         tick_label.set_color(color)
         

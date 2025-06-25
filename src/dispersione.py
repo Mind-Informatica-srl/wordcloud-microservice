@@ -1,4 +1,6 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from adjustText import adjust_text
@@ -35,6 +37,8 @@ def generate_dispersione(x, y, labels, format, width, height):
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not x or not y or not labels or len(x) != len(y) or len(x) != len(labels) or len(y) != len(labels) or all(value == 0 for value in x) or all(value == 0 for value in y) or x is None or y is None or labels is None: 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -84,7 +88,7 @@ def generate_dispersione(x, y, labels, format, width, height):
         else:
             alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
         #TODO: con questo font non si apre nel loro editor online, forse risolto con bbox_inches="tight", oppure togliendo ovunque fontproperties=avenir_font_path
-        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=10, fontweight='bold', fontproperties=avenir_font_path , **alignment))
+        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path , **alignment))
 
 
     # Se nell'intorno del punto ci sono altre etichette, le sposta per evitare sovrapposizioni
@@ -106,21 +110,21 @@ def generate_dispersione(x, y, labels, format, width, height):
     quartoquadrante = 12.5
     primoquarto = quartoquadrante
     terzoquarto = 65
-    ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
-    ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
     # Aggiungi un cerchio rosso sopra l'etichetta
     circle = patches.Ellipse((75, 102.5), width=25,height=6, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
     ax.add_patch(circle)
-    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
-    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=10, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
 
 
 
     # Personalizzazioni
     ax.set_xlim(0, 102)
     ax.set_ylim(0, 102)
-    ax.set_xlabel("IMPORTANZA", fontsize=12, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
-    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=12, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
+    ax.set_xlabel("IMPORTANZA", fontsize=font_size, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
+    ax.set_ylabel("FREQUENZA DI SCELTA", fontsize=font_size, labelpad=10, fontweight='bold', fontproperties=avenir_font_path)
     ax.spines['top'].set_color('green')
     ax.spines['right'].set_color('green')
     ax.spines['left'].set_color('green')

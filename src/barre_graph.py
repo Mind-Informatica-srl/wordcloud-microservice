@@ -1,4 +1,6 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
@@ -29,6 +31,8 @@ def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     else:
         width = width / EMU
         height = height / EMU
+    
+    font_size = calcola_font_size(width, height)
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -69,7 +73,7 @@ def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
@@ -133,6 +137,8 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not colors or not sizes or not fasce or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -173,7 +179,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
     for i in range(len(normalized_sizes)):
         ax.barh([''], normalized_sizes[i], left=left, color=colors[i], edgecolor=None)
         if normalized_sizes[i] != 0 and i == 0:
-            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
+            ax.text(left + normalized_sizes[i] / 2, 0, f"{normalized_sizes[i]:.2f}%", ha='center', va='bottom', color='black', fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
         left += normalized_sizes[i]
 
     # Personalizzazioni
@@ -200,7 +206,7 @@ def generate_barre_in_pila_serie_s(colors, sizes, fasce, format, width, height):
     # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
     for i in range(len(fasce)):
         ax.axvline(fasce[i], color='black', linestyle='-', linewidth=1.5)
-        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+        ax.text(fasce[i], 1.1, f"{fasce[i]}%", ha='center', va='top', color='black', fontsize=font_size, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
 
     # Adatta il layout del grafico
     fig.tight_layout()

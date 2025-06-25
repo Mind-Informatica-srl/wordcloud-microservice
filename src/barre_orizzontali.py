@@ -1,4 +1,7 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
@@ -9,6 +12,7 @@ from constants import EMU
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
+
 def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
     """
     Genera un grafico a barre orizzontali con colori personalizzati e restituisce l'immagine come array di byte.
@@ -32,6 +36,8 @@ def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not sizes or not colors or not labels or sizes.count(0) == len(sizes) or sizes is None or colors is None or labels is None:
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -63,7 +69,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
     bar_height = 0.4  # Altezza delle barre
     ax.barh(y_pos, sizes, color=colors, edgecolor=None, height=bar_height)
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(labels, fontsize=10, fontweight='bold', fontproperties=avenir_font_path)
+    ax.set_yticklabels(labels, fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
 
     # Imposta il limite massimo dell'asse delle ascisse a 100
     ax.set_xlim(0, 100)
@@ -74,7 +80,7 @@ def generate_barre_orizzontali(colors, labels, sizes, format, width, height):
     # Aggiungi le etichette ai bar
     for i, v in enumerate(sizes):
         v = round(v)
-        ax.text(v + 0.1, i, f"{v}%", color='black', va='center', fontsize=14, fontweight='bold', fontproperties=avenir_font_path)
+        ax.text(v + 0.1, i, f"{v}%", color='black', va='center', fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
 
     # Riduci lo spazio tra le barre
     ax.set_ylim(-0.5, len(labels) - 0.5)

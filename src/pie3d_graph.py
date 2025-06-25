@@ -1,4 +1,6 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,6 +36,8 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not colors or not sizes or not labels or sizes.count(0) == len(sizes): 
         # Genera un'immagine bianca
         if format.lower() == 'svg':
@@ -75,7 +79,7 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
 
 
     # Aggiungi il titolo al grafico
-    plt.title(title, fontproperties=avenir_font_path, fontsize=16, fontweight='bold')
+    plt.title(title, fontproperties=avenir_font_path, fontsize=font_size, fontweight='bold')
 
     # Imposta il colore delle etichette e aggiungi le percentuali sotto le etichette
     for text, percentage, color in zip(texts, percentages, colors):
@@ -83,7 +87,7 @@ def generate_pie3d(colors, labels, sizes, explode, title, format, width, height)
         text.set_fontproperties(avenir_font_path)
         if percentage != '0.00%':
             text.set_color(color)
-            text.set_fontsize(12)
+            text.set_fontsize(font_size)
             text.set_text(f'{text.get_text()}\n{percentage}')
         else:
             text.set_text('')

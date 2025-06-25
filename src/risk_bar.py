@@ -1,4 +1,6 @@
 import matplotlib
+
+from funzioni_shared import calcola_font_size
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
@@ -33,6 +35,8 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         width = width / EMU
         height = height / EMU
 
+    font_size = calcola_font_size(width, height)
+    
     if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors or len(values) == 0 or all(value == 0 for value in values): 
         if format.lower() == 'svg':
             # Genera un'immagine SVG bianca con una scritta in rosso
@@ -93,12 +97,12 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
                 if val[i] != 0 and val[i] != None and val[i] != 0.00:
-                    ax.text(val[i], y_positions[j] + i * (bar_height + bar_spacing), f'{val[i]:.2f}', va='center', ha='left', fontsize=10, color='black', fontweight='bold', fontproperties=avenir_font_path)
+                    ax.text(val[i], y_positions[j] + i * (bar_height + bar_spacing), f'{val[i]:.2f}', va='center', ha='left', fontsize=font_size, color='black', fontweight='bold', fontproperties=avenir_font_path)
 
 
         # Configura assi e legenda
         ax.set_yticks(y_positions + bar_height * (len(groups) - 1) / 2)
-        ax.set_yticklabels(categories, fontsize=12, fontweight='bold', fontproperties=avenir_font_path)
+        ax.set_yticklabels(categories, fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
         # Prima legenda per le fasce di rischio
         risk_legend = ax.legend(
             handles=risk_patches, 
@@ -121,7 +125,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             bbox_to_anchor=(1, 0.5), 
             frameon=False,  # Rimuovi il bordo
             prop=avenir_font_path,
-            fontsize=12,
+            fontsize=font_size,
         )      
         for text, color in zip(group_legend.get_texts(), legend_colors):
             if color != "" and color != None:
