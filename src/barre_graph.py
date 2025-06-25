@@ -115,7 +115,7 @@ def generate_barre_in_pila(cod_domanda, colors, labels, sizes, format, width, he
     # if cod_domanda != 'C4':
     for i in range(len(fasce_alte)):
         ax.axvline(100 - fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
-        ax.text(100 - fasce_alte[i], 1.1, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+        ax.text(100 - fasce_alte[i], 1.3, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
     # else:
     #     for i in range(len(fasce_alte)):
     #         ax.axvline(fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
