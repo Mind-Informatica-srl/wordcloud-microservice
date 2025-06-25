@@ -459,7 +459,7 @@ def valuta_if_docx(doc, replacements):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip().endswith("{{fine_if:" + placeholder + "}}"):
+                if doc.paragraphs[j].text.strip().endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
                     end_idx = j
                     break
             if end_idx is None:
