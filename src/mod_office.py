@@ -14,6 +14,12 @@ from office.save_image import save_image
 import re
 import io
 import subprocess
+import requests
+from docx.shared import Inches
+from io import BytesIO
+
+from pdf2image import convert_from_bytes
+
 
 from python_docx_replace import docx_blocks, docx_replace
 from python_docx_replace.paragraph import Paragraph
@@ -123,6 +129,20 @@ def delete_paragraph(paragraph):
     p = paragraph._element
     p.getparent().remove(p)
     p._p = p._element = None
+
+def insert_pdf_images_into_docx(doc, pdf_bytes, insert_index):
+    images = convert_from_bytes(pdf_bytes)
+    for img in images:
+        # Converti immagine in PNG e salvala in un buffer
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        # Inserisci paragrafo e immagine nel documento
+        doc.paragraphs[insert_index].insert_paragraph_before()
+        doc.paragraphs[insert_index - 1].add_run().add_picture(buffer, width=Inches(6))
+
+    return insert_index + len(images)
 
 def append_to_doc(doc,p):
     doc.add_paragraph("",p.style)       # add an empty paragraph in the matching style
@@ -257,8 +277,57 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     # # Sostituire le immagini tramite testo alternativo
     replace_image_in_docx(doc, image_replacements)
     valuta_if_docx(doc, replacements)
-    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)    
-                    
+    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)  
+    # Per ogni replacement_for_each, recuperare i valori del campo Html
+    if replacements_for_each is not None and len(replacements_for_each) > 0:
+        if "{{for_go:n}}" in replacements_for_each:
+            # se esiste, cerco all'interno del file docx il blocco che inizia con {{liste_controllo_go:}} e termina con {{fine_liste_controllo_go:}}
+            # recupero i byte eseguendo la richiesta al server con la url contenuta in item["html"]
+            # per ogni elemento contenuto in {{for_go:n}} sostituisco il blocco {{liste_controllo_go:}} con i byte del file docx recuperato
+              # e sostituisco {{fine_liste_controllo_go:}} con un tag <fine_liste_controllo_go>
+
+             for idx, para in enumerate(doc.paragraphs):
+                 if "{{liste_controllo_go}}" in para.text:
+                     for item in replacements_for_each["{{for_go:n}}"]:
+                         if "html" in item and item["html"] is not None:
+                             url = os.getenv("BASE_URL") + item["html"]["{{liste_controllo_go}}"]
+                             response = requests.get(url)
+                             if response.status_code == 200:
+                                 pdf_bytes = response.content
+                                 insert_pdf_images_into_docx(doc, pdf_bytes, idx)
+                             else:
+                                 print(f"Errore durante il download da {url}")
+                     para.text = para.text.replace("{{liste_controllo_go}}", "")
+                     break  # Rimuovi se vuoi inserire lo stesso blocco in più punti
+                    # i = 0
+                    # for para in doc.paragraphs:
+                    #     if para.text.startswith("{{liste_controllo_go}}"):
+                    #         # Trova la fine del blocco
+                    #         end_idx = None
+                    #         for j in range(i + 1, len(doc.paragraphs)):
+                    #             if doc.paragraphs[j].text.strip().startswith("{{fine_liste_controllo_go}}"):
+                    #                 end_idx = j
+                    #                 break
+                    #         if end_idx is not None:
+                    #             # Recupera i byte del file HTML
+                    #             url =  os.getenv("BASE_URL") + item["html"]["{{liste_controllo_go}}"]
+                    #             response = requests.get(url)
+                    #             if response.status_code == 200:
+                    #                 html_bytes = response.content
+                    #             else:
+                    #                 print(f"Errore durante il download dell'immagine da '{url}'")
+                    #             # Crea un nuovo documento DOCX con i byte HTML
+                    #             new_doc = docx_to_pdf_merge(doc, html_bytes)
+                    #             # Aggiungi il nuovo documento al documento principale
+                    #             for new_para in new_doc.paragraphs:
+                    #                 doc.add_paragraph(new_para.text, style=new_para.style)
+                    #             # Rimuovi il blocco originale
+                    #             for idx in range(end_idx, doc.paragraphs.index(para), -1):
+                    #                 delete_paragraph(doc.paragraphs[idx])
+                    #             delete_paragraph(para)
+                    #     else:
+                    #         i += 1
+
 
     # Salvare il file DOCX modificato
     storage_path = os.path.join("storage", "modificati")
