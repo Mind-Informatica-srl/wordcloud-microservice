@@ -517,9 +517,9 @@ def valuta_if_docx(doc, replacements):
     i = 0
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
-        if para.text.strip().startswith("{{if:") and para.text.strip().endswith("}}"):
+        if para.text.strip().startswith("{{if:"):
             # Estrai placeholder e condizione
-            match = re.match(r"\{\{if:([^\}:]+):([^\}]+)\}\}", para.text.strip())
+            match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
             if not match:
                 i += 1
                 continue
@@ -565,7 +565,7 @@ def valuta_if_blocco(blocco, replacements):
     while i < len(blocco):
         para = blocco[i]
         if para.text.strip().startswith("{{if:") and para.text.strip().endswith("}}"):
-            match = re.match(r"\{\{if:([^\}:]+):([^\}]+)\}\}", para.text.strip())
+            match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
             if not match:
                 i += 1
                 continue
@@ -574,7 +574,7 @@ def valuta_if_blocco(blocco, replacements):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(blocco)):
-                if blocco[j].text.strip().endswith("{{fine_if:" + placeholder + "}}"):
+                if blocco[j].text.strip().endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
                     end_idx = j
                     break
             if end_idx is None:
