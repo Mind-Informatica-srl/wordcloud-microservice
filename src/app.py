@@ -120,9 +120,13 @@ def create_barre_in_pila():
     format = data.get('format', 'png')
     width = data.get('width', 610)
     height = data.get('height', 180)
+    fasce_basse = data.get('fasce_confidenza_bassa', [])
+    fasce_alte = data.get('fasce_confidenza_alta', [])
+    cod_domanda = data.get('cod_domanda', '')
+
 
     try:
-        image_bytes = generate_barre_in_pila(colors, labels, sizes, format, width, height)
+        image_bytes = generate_barre_in_pila(cod_domanda, colors, labels, sizes, format, width, height, fasce_basse, fasce_alte)
         buffer = io.BytesIO(image_bytes)
         response = make_response(buffer.read())
         response.headers.set('Content-Type', mime_types[format])
@@ -196,10 +200,13 @@ def create_distribuzione():
     cl = data.get('color_labels', [])
     width = data.get('width', 610)
     height = data.get('height', 180)
+    fasce_basse = data.get('fasce_confidenza_basse', [])
+    fasce_alte = data.get('fasce_confidenza_alte', [])
+    cod_domanda = data.get('cod_domanda', '')
 
 
     try:
-        image_bytes = create_survey_chart(survey_data, cn, c, format, cl, width, height)
+        image_bytes = create_survey_chart(survey_data, cn, c, format, cl, width, height, fasce_basse, fasce_alte, cod_domanda)
         buffer = io.BytesIO(image_bytes)
         response = make_response(buffer.read())
         response.headers.set('Content-Type', mime_types[format])

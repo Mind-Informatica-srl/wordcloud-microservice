@@ -9,7 +9,7 @@ import svgwrite
 from matplotlib import font_manager as fm
 from constants import EMU
 
-def generate_barre_in_pila(colors, labels, sizes, format, width, height):
+def generate_barre_in_pila(cod_domanda, colors, labels, sizes, format, width, height, fasce_basse, fasce_alte):
     """
     Genera un grafico a barre in pila con colori personalizzati e restituisce l'immagine come array di byte.
 
@@ -101,6 +101,43 @@ def generate_barre_in_pila(colors, labels, sizes, format, width, height):
     ax.grid(axis='x', color='lightgrey', linestyle='-', linewidth=0.5)
     ax.set_axisbelow(True)  # Posiziona le linee della griglia dietro le barre
 
+    if fasce_basse is None:
+        fasce_basse = []
+    if fasce_alte is None:
+        fasce_alte = []
+
+    # Aggiungere delle linee verticali nere e in grassetto nei due valori delle fasce
+    if cod_domanda != 'C4' and cod_domanda != 'C3':
+        for i in range(len(fasce_basse)):
+            ax.axvline(fasce_basse[i], color='#fe4254', linestyle='-', linewidth=1.5)
+            ax.text(fasce_basse[i], 1.1, f"{fasce_basse[i]}%", ha='center', va='top', color='#fe4254', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+    elif cod_domanda != 'C4' and cod_domanda == 'C3':
+        for i in range(len(fasce_basse)):
+            ax.axvline(fasce_basse[i], color='#fe4254', linestyle='-', linewidth=1.5)
+            if i != 0:
+                ax.text(fasce_basse[i] - 0.5, 1.1, f"{fasce_basse[i]}%", ha='center', va='top', color='#fe4254', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+            else:
+                ax.text(fasce_basse[i], 1.1, f"{fasce_basse[i]}%", ha='center', va='top', color='#fe4254', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+    else :
+        for i in range(len(fasce_basse)):
+            ax.axvline(100 - fasce_basse[i], color='#fe4254', linestyle='-', linewidth=1.5)
+            ax.text(100 - fasce_basse[i], 1.1, f"{fasce_basse[i]}%", ha='center', va='top', color='#fe4254', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+
+    if cod_domanda != 'C3':
+        for i in range(len(fasce_alte)):
+            ax.axvline(100 - fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
+            ax.text(100 - fasce_alte[i], 1.1, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+    else:
+        for i in range(len(fasce_alte)):
+            ax.axvline(100 - fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
+            if i != 0:
+                ax.text(100 - fasce_alte[i] + 0.8, 1.1, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+            else:
+                ax.text(100 - fasce_alte[i], 1.1, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
+    # else:
+    #     for i in range(len(fasce_alte)):
+    #         ax.axvline(fasce_alte[i], color='#005e34', linestyle='-', linewidth=1.5)
+    #         ax.text(fasce_alte[i], 1.1, f"{fasce_alte[i]}%", ha='center', va='top', color='#005e34', fontsize=10, fontweight='bold', transform=ax.get_xaxis_transform(), fontproperties=avenir_font_path)
     # Adatta il layout del grafico
     fig.tight_layout()
 

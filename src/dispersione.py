@@ -10,6 +10,7 @@ import matplotlib.patches as patches
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 from constants import EMU
+import numpy as np
 
 # Importa il font manager di Matplotlib
 from matplotlib import font_manager as fm
@@ -67,38 +68,71 @@ def generate_dispersione(x, y, labels, format, width, height):
     # Creazione del grafico
     fig, ax = plt.subplots(figsize=(width, height))  # Imposta la dimensione della figura per renderla più stretta in altezza
 
+    np.random.seed(42)
+    jitter_strength = 1.5
+    x_jittered = [xi + np.random.uniform(-jitter_strength, jitter_strength) for xi in x]
+    y_jittered = [yi + np.random.uniform(-jitter_strength, jitter_strength) for yi in y]
+
     # Aggiunta dei punti
     ax.scatter(x, y, color='red')
     # Aggiunta delle etichette ai punti
     metaX = 50
     metaY = 50
-    texts = []
     for i, label in enumerate(labels):
-        wrapped_label = "\n".join(textwrap.wrap(label, width=30))
-        # Impedisce che l'etichetta esca dai margini superiori o inferiori
-        y_text = min(max(y[i] + 0.05, 1), 97)
-        # Impedisce che l'etichetta esca dai margini laterali
-        x_text = min(max(x[i] + 0.05, 11), 90)
-        if x[i] > metaX and y[i] > metaY:
-            alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'left'}
-        elif x[i] > metaX and y[i] <= metaY:
-            alignment = {'verticalalignment': 'top', 'horizontalalignment': 'left'}
-        elif x[i] <= metaX and y[i] > metaY:
-            alignment = {'verticalalignment': 'bottom', 'horizontalalignment': 'right'}
+        radius = 4
+        vicini_sopra = [j for j in range(len(x)) if j != i and abs(x[i] - x[j]) < radius and y[j] > y[i] and abs(y[i] - y[j]) < radius]
+        vicini_sotto = [j for j in range(len(x)) if j != i and abs(x[i] - x[j]) < radius and y[j] < y[i] and abs(y[i] - y[j]) < radius]
+        vicini_dx = [j for j in range(len(x)) if j != i and x[j] > x[i] and abs(x[i] - x[j]) < radius and abs(y[i] - y[j]) < radius]
+        vicini_sx = [j for j in range(len(x)) if j != i and x[j] < x[i] and abs(x[i] - x[j]) < radius and abs(y[i] - y[j]) < radius]
+
+        base_offset = 2
+        offset_x = 1.5
+        # Default
+        ha = 'left'
+        va = 'center'
+        offset_y = 0
+
+        if not vicini_sopra and not vicini_sotto and not vicini_dx and not vicini_sx:
+            offset_x = 2
+            offset_y = 0
+            ha = 'left'
+            va = 'center'
         else:
-            alignment = {'verticalalignment': 'top', 'horizontalalignment': 'right'}
-        #TODO: con questo font non si apre nel loro editor online, forse risolto con bbox_inches="tight", oppure togliendo ovunque fontproperties=avenir_font_path
-        texts.append(ax.text(x_text, y_text, wrapped_label, fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path , **alignment))
+            # Verticale
+            if len(vicini_sopra) > len(vicini_sotto):
+                offset_y = -base_offset * (1 + len(vicini_sopra))
+                va = 'top'
+            else:
+                offset_y = base_offset * (1 + len(vicini_sotto))
+                va = 'bottom'
+            # Orizzontale
+            if len(vicini_dx) > len(vicini_sx):
+                offset_x = -base_offset * (1 + len(vicini_dx))
+                ha = 'right'
+            else:
+                offset_x = base_offset * (1 + len(vicini_sx))
+                ha = 'left'
 
+        wrapped_label = "\n".join(textwrap.wrap(label, width=30))
+        ax.annotate(
+            wrapped_label,
+            (x[i], y[i]),
+            xytext=(x[i]+offset_x, y[i]+offset_y),
+            textcoords='data',
+            fontsize=12,
+            fontweight='bold',
+            fontproperties=avenir_font_path,
+            arrowprops=dict(arrowstyle="->", color='gray', lw=0.5),
+            zorder=10,
+            verticalalignment=va,
+            horizontalalignment=ha
+        )
 
-    # Se nell'intorno del punto ci sono altre etichette, le sposta per evitare sovrapposizioni
-    adjust_text(
-        texts, 
-        ax=ax,
-        expand_text=(1.1, 1.1),
-        force_points=0.5,
-        only_move={'text':'xy'}
-    )
+    # Sposta le etichette solo se necessario e mostra la freccia solo se serve
+    # Chiama adjust_text per spostare le etichette evitando sovrapposizioni
+    # adjust_text(texts, x=x, y=y, autoalign='y',force_text=0.5,
+    #     force_points=0.5, only_move={'points':'xy', 'texts':'xy'}, 
+    #     expand_points=(1.5, 1.5), expand_text=(2, 2))
 
     # Aggiunta delle linee per dividere il grafico in 4 parti uguali
     ax.axhline(y= metaY, color='lightgrey', linestyle='-', zorder=0)
@@ -113,7 +147,7 @@ def generate_dispersione(x, y, labels, format, width, height):
     ax.text(primoquarto, 102, "A. NON IMPORTANTI E SCELTE DA MOLTI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
     ax.text(terzoquarto, 102, "B. IMPORTANTI E SCELTE DA MOLTI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
     # Aggiungi un cerchio rosso sopra l'etichetta
-    circle = patches.Ellipse((75, 102.5), width=25,height=6, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
+    circle = patches.Ellipse((75.8, 102.6), width=30,height=8, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
     ax.add_patch(circle)
     ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
     ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
@@ -130,14 +164,15 @@ def generate_dispersione(x, y, labels, format, width, height):
     ax.spines['left'].set_color('green')
     ax.spines['bottom'].set_color('green')
     ax.tick_params(axis='both', which='both', color='green')
+    ax.tick_params(axis='x', pad=12)
 
     # Imposta il colore del contorno a verde
     for spine in fig.gca().spines.values():
         spine.set_edgecolor('green')
 
     # Rimuovi le etichette degli assi
-    fig.gca().set_xticklabels([])
-    fig.gca().set_yticklabels([])
+    # fig.gca().set_xticklabels([])
+    # fig.gca().set_yticklabels([])
 
     # Titolo
     # plt.title("Distribuzione Importanza-Frequenza", fontsize=14, pad=15)
