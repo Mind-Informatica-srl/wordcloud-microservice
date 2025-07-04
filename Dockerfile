@@ -1,10 +1,13 @@
-FROM python:3.13.3-slim
+FROM python:3.13-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Install gcc
-RUN apt-get update && apt-get install -y gcc
+# Install gcc, Poppler (for pdf2image), and basic fonts
+RUN apt-get update && \
+    apt-get install -y gcc poppler-utils && \
+    apt-get upgrade -y && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file
 COPY requirements.txt .
