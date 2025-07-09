@@ -149,8 +149,8 @@ def generate_dispersione(x, y, labels, format, width, height):
     # Aggiungi un cerchio rosso sopra l'etichetta
     circle = patches.Ellipse((75.8, 102.6), width=30,height=8, edgecolor='red', facecolor='none', linewidth=2, zorder=10, clip_on=False)
     ax.add_patch(circle)
-    ax.text(primoquarto, -1, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
-    ax.text(terzoquarto, -1, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(primoquarto, -10, "C. NON IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
+    ax.text(terzoquarto, -10, "D. IMPORTANTI E SCELTE DA POCHI", fontsize=font_size, fontweight='bold', backgroundcolor='darkgreen', color='white', fontproperties=avenir_font_path)
 
 
 
