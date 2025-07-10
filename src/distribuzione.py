@@ -86,15 +86,26 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     # Imposta le etichette sull'asse delle y in grassetto
     ax.set_yticklabels(labels, fontweight='bold', fontsize=font_size, fontproperties=avenir_font_path)
 
+    if (not fasce_basse or not fasce_alte):
+        for i, (category, color) in enumerate(zip(category_names, colors)):
+            widths = values[:, i]
+            starts = cumulative_values[:, i] - widths
+            rects = ax.barh(labels, widths, left=starts, height=0.5,
+                            label="Stress " + category, color=color)
 
-    for i, (category, color) in enumerate(zip(category_names, colors)):
-        widths = values[:, i]
-        starts = cumulative_values[:, i] - widths
-        rects = ax.barh(labels, widths, left=starts, height=0.5,
-                        label="Stress " + category, color=color)
+            # Aggiungi etichette al centro di ogni barra
+            ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
 
-        # Aggiungi etichette al centro di ogni barra
-        ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
+    else:
+        for i, (category, color) in enumerate(zip(category_names, colors)):
+            widths = values[:, i]
+            starts = cumulative_values[:, i] - widths
+            rects = ax.barh(labels, widths, left=starts, height=0.5,
+                            label= category, color=color)
+
+            # Aggiungi etichette al centro di ogni barra
+            ax.bar_label(rects, labels=[f'{w:.1f}%' if w != 0 else '' for w in widths], label_type='center', color=color_labels[i], fontsize=font_size, fontweight='bold', fontproperties=avenir_font_path)
+
 
     ax.legend(ncol=len(category_names), bbox_to_anchor=(0.5, -0.2),
               loc='upper center', fontsize='small', frameon=False, prop=avenir_font_path)
