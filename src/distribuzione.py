@@ -86,7 +86,7 @@ def create_survey_chart(dataArray, category_names, colors, format, color_labels,
     # Imposta le etichette sull'asse delle y in grassetto
     ax.set_yticklabels(labels, fontweight='bold', fontsize=font_size, fontproperties=avenir_font_path)
 
-    if (not fasce_basse or not fasce_alte):
+    if (not fasce_basse or not fasce_alte) and cod_domanda != 'C4':
         for i, (category, color) in enumerate(zip(category_names, colors)):
             widths = values[:, i]
             starts = cumulative_values[:, i] - widths
