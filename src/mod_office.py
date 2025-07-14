@@ -162,10 +162,13 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
     i = 0
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
-        if para.text.startswith("{{for_fg:") or para.text.startswith("{{for_go:"):
-            if para.text.startswith("{{for_fg:"):
+        # if para.text.startswith("{{for_fg:") or para.text.startswith("{{for_go:"):
+        if "{{for_fg:" in para.text or "{{for_go:" in para.text:
+            if "{{for_fg:" in para.text:
+                forcontroller = "{{fine_for_fg}}"
                 forplaceholder = "{{for_fg:n}}"
             else:
+                forcontroller = "{{fine_for_go}}"
                 forplaceholder = "{{for_go:n}}"
             print("Trovato inizio blocco di duplicazione", i)
         match = re.match(r"{{for_(fg|go):(\d+)}}", para.text.strip())
@@ -175,7 +178,8 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip() == "{{fine_for_fg}}" or doc.paragraphs[j].text.strip() == "{{fine_for_go}}":
+                # if doc.paragraphs[j].text.endswith(forcontroller):
+                if forcontroller in doc.paragraphs[j].text:
                     end_idx = j
                     break
             if end_idx is None:
@@ -517,7 +521,8 @@ def valuta_if_docx(doc, replacements):
     i = 0
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
-        if para.text.strip().startswith("{{if:"):
+        # if para.text.startswith("{{if:"):
+        if "{{if:" in para.text:
             # Estrai placeholder e condizione
             match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
             if not match:
@@ -528,7 +533,8 @@ def valuta_if_docx(doc, replacements):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(doc.paragraphs)):
-                if doc.paragraphs[j].text.strip().endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
+                # if doc.paragraphs[j].text.endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
+                if "{{fine_if:" + placeholder + ":" + condizione + "}}" in doc.paragraphs[j].text:
                     end_idx = j
                     break
             if end_idx is None:
@@ -564,7 +570,7 @@ def valuta_if_blocco(blocco, replacements):
     i = 0
     while i < len(blocco):
         para = blocco[i]
-        if para.text.strip().startswith("{{if:") and para.text.strip().endswith("}}"):
+        if para.text.startswith("{{if:"):
             match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
             if not match:
                 i += 1
@@ -574,7 +580,7 @@ def valuta_if_blocco(blocco, replacements):
             # Trova la fine del blocco
             end_idx = None
             for j in range(i+1, len(blocco)):
-                if blocco[j].text.strip().endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
+                if blocco[j].text.endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
                     end_idx = j
                     break
             if end_idx is None:
