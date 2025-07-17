@@ -155,10 +155,6 @@ def append_to_doc(doc,p):
 
 
 def duplica_blocchi_paragrafi(doc, replacements_for_each):
-    if replacements_for_each is None or len(replacements_for_each) == 0:
-        print("Nessun blocco di paragrafi da duplicare.")
-        return
-    
     i = 0
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
@@ -227,7 +223,7 @@ def duplica_blocchi_paragrafi(doc, replacements_for_each):
                             if info is not None:
                                 for placeholder, image_path in rep["immagini"].items():
                                     if placeholder in info:
-                                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=shape.width, height=shape.height)
+                                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
                                         new_alt = ""
                                         
                                 width, height = shape.width, shape.height
@@ -277,11 +273,11 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     doc = docx.Document(docx_path)
     docx_replace(doc, **replacements)
     duplica_blocchi_paragrafi(doc, replacements_for_each)
-    
-    # # Sostituire le immagini tramite testo alternativo
-    replace_image_in_docx(doc, image_replacements)
+    # Sostituire le immagini tramite testo alternativo
     valuta_if_docx(doc, replacements)
+    # elabora_blocchi_paragrafi(doc, replacements_for_each, replacements, image_replacements)
     docx_blocks(doc, da_mantenere=True, da_rimuovere=False)  
+    replace_image_in_docx(doc, image_replacements)
     # Per ogni replacement_for_each, recuperare i valori del campo Html
     if replacements_for_each is not None and len(replacements_for_each) > 0:
         if "{{for_go:n}}" in replacements_for_each:
@@ -390,7 +386,10 @@ def replace_image_in_docx(doc, image_replacements):
                 for placeholder, image_path in image_replacements.items():
                     if placeholder in alt_text:
                         or_width, or_height = shape.width, shape.height
-                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                        if placeholder.startswith("{{B") or placeholder.startswith("{{DA31_"):
+                            imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                        else:
+                            imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
                         # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
                         # blip = shape._inline.graphic.graphicData.pic.blipFill.blip
 
@@ -608,6 +607,155 @@ def valuta_if_blocco(blocco, replacements):
             i += 1
 
     return blocco
+
+def elabora_blocchi_paragrafi(doc, replacements_for_each, replacements, image_replacements):
+    i = 0
+    while i < len(doc.paragraphs):
+        para = doc.paragraphs[i]
+        testo = para.text.strip()
+
+        # -------------------------------
+        # GESTIONE BLOCCO {{for_fg:n}} O {{for_go:n}}
+        # -------------------------------
+        match_for = re.match(r"\{\{for_(fg|go):(\d+)\}\}", testo)
+        if match_for:
+            tipo, n = match_for.group(1), int(match_for.group(2))
+            forcontroller = f"{{{{fine_for_{tipo}}}}}"
+            forplaceholder = f"{{{{for_{tipo}:n}}}}"
+            start_idx = i
+
+            end_idx = next(
+                (j for j in range(i+1, len(doc.paragraphs)) if forcontroller in doc.paragraphs[j].text),
+                None
+            )
+            if end_idx is None:
+                i += 1
+                continue
+
+            blocco = [doc.paragraphs[k] for k in range(start_idx+1, end_idx)]
+            nuovi_paragrafi = []
+            reps = replacements_for_each.get(forplaceholder, [])
+
+            for dup_idx in range(n):
+                rep = reps[dup_idx] if dup_idx < len(reps) else reps[0]
+
+                for p in blocco:
+                    new_par = doc.add_paragraph("", p.style)
+                    for r in p.runs:
+                        nr = new_par.add_run(r.text)
+                        nr.style = r.style
+                        nr.bold = r.bold
+                        nr.italic = r.italic
+                        nr.underline = r.underline
+
+                    # Sostituzione testuale
+                    paragraph_obj = Paragraph(new_par)
+                    for key, value in rep["testuali"].items():
+                        paragraph_obj.replace_key(key, str(value))
+
+                    # Copia immagini associate
+                    for shape in doc.inline_shapes:
+                        parent = shape._inline.getparent()
+                        while parent is not None and parent != p._element:
+                            parent = parent.getparent()
+
+                        if parent == p._element:
+                            alt_text = shape._inline.docPr.get('descr')
+                            width, height = shape.width, shape.height
+
+                            # Aggiorna alt text con indice duplica
+                            if alt_text:
+                                new_alt = re.sub(
+                                    r"(\{\{[a-zA-Z0-9_]+:)\d+(\}\})",
+                                    lambda m: f"{m.group(1)}{dup_idx + 2}{m.group(2)}",
+                                    alt_text
+                                )
+                            else:
+                                new_alt = None
+
+                            info = extract_placeholder_info(new_alt)
+
+                            # Se l’immagine è legata a un placeholder
+                            if info is not None:
+                                for placeholder, image_path in rep["immagini"].items():
+                                    if placeholder in info:
+                                        saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
+                                        with open(saved[info[1]], "rb") as img_file:
+                                            image_bytes = img_file.read()
+
+                                        run_img = new_par.add_run()
+                                        run_img.add_picture(io.BytesIO(image_bytes), width=width, height=height)
+
+                                        last_shape = doc.inline_shapes[-1]
+                                        last_shape._inline.docPr.set('descr', new_alt or "")
+                                        break
+                            else:
+                                # Copia immagine originale se nessun placeholder trovato
+                                blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                                image_part = doc.part.related_parts[blip.embed]
+                                image_bytes = image_part.blob
+
+                                run_img = new_par.add_run()
+                                run_img.add_picture(io.BytesIO(image_bytes), width=width, height=height)
+
+                                if alt_text:
+                                    last_shape = doc.inline_shapes[-1]
+                                    last_shape._inline.docPr.set('descr', alt_text)
+
+                    nuovi_paragrafi.append(new_par)
+
+            # Elimina blocco originale
+            for idx in range(end_idx, start_idx - 1, -1):
+                delete_paragraph(doc.paragraphs[idx])
+
+            # Inserisci duplicati
+            body = doc._body._element
+            insert_pos = start_idx
+            for new_par in nuovi_paragrafi:
+                body.insert(insert_pos, new_par._element)
+                insert_pos += 1
+
+            i = insert_pos
+            continue
+
+        # -------------------------------
+        # GESTIONE BLOCCO CONDIZIONALE {{if:ph:cond}}...{{fine_if:ph:cond}}
+        # -------------------------------
+        match_if = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", testo)
+        if match_if:
+            placeholder, condizione = match_if.group(1), match_if.group(2)
+            ph = "{{" + placeholder + "}}"
+            end_marker = f"{{{{fine_if:{placeholder}:{condizione}}}}}"
+            end_idx = None
+            for j in range(i+1, len(doc.paragraphs)):
+                # if doc.paragraphs[j].text.endswith("{{fine_if:" + placeholder + ":" + condizione + "}}"):
+                if end_marker in doc.paragraphs[j].text:
+                    end_idx = j
+                    break
+            if end_idx is None:
+                i += 1
+                continue
+
+            valore = None
+            if ph in replacements:
+                valore = replacements[ph]
+            elif ph in image_replacements:
+                valore = image_replacements[ph]
+
+            soddisfatta = False
+            if condizione == "*":
+                soddisfatta = valore not in [None, ""]
+            elif condizione == "":
+                soddisfatta = valore == ""
+            else:
+                soddisfatta = valore == condizione
+
+            doc.paragraphs[i].text = "<da_mantenere>" if soddisfatta else "<da_rimuovere>"
+            doc.paragraphs[end_idx].text = "</da_mantenere>" if soddisfatta else "</da_rimuovere>"
+            i = end_idx + 1
+            continue
+
+        i += 1
 
 def process_file(file_path, replacements, image_replacements, replacements_for_each):
     # Verifica il tipo di file
