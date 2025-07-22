@@ -17,6 +17,7 @@ import subprocess
 import requests
 from docx.shared import Inches
 from io import BytesIO
+import base64
 
 from pdf2image import convert_from_bytes
 
@@ -274,7 +275,7 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     docx_replace(doc, **replacements)
     duplica_blocchi_paragrafi(doc, replacements_for_each)
     # Sostituire le immagini tramite testo alternativo
-    valuta_if_docx(doc, replacements)
+    valuta_if_docx(doc, replacements, image_replacements)
     # elabora_blocchi_paragrafi(doc, replacements_for_each, replacements, image_replacements)
     docx_blocks(doc, da_mantenere=True, da_rimuovere=False)  
     replace_image_in_docx(doc, image_replacements)
@@ -377,6 +378,9 @@ def pixel_to_emu(pixels, dpi=96):
     # 1 pollice = 914400 EMU, 1 pollice = dpi pixel
     return int(pixels * 914400 / dpi)
 
+def bytes_to_base64(bytes_data):
+    return base64.b64encode(bytes_data).decode('utf-8')
+
 def replace_image_in_docx(doc, image_replacements):
     #######################
     for shape in doc.inline_shapes:
@@ -386,7 +390,7 @@ def replace_image_in_docx(doc, image_replacements):
                 for placeholder, image_path in image_replacements.items():
                     if placeholder in alt_text:
                         or_width, or_height = shape.width, shape.height
-                        if placeholder.startswith("{{B") or placeholder.startswith("{{DA31_"):
+                        if placeholder.startswith("{{B") or placeholder.startswith("{{DA31_") or placeholder.startswith("{{C5") or placeholder.startswith("{{C7"):
                             imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
                         else:
                             imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
@@ -395,7 +399,7 @@ def replace_image_in_docx(doc, image_replacements):
 
                         dimfissa = or_width if or_width > or_height else or_height
 
-                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                        if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C7}}"):
                                             height = or_height
                                             width = or_width
                         else:
@@ -425,10 +429,11 @@ def replace_image_in_docx(doc, image_replacements):
                         # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
                         blip = shape._inline.graphic.graphicData.pic.blipFill.blip
 
-                        # Sostituisce l'immagine nel pacchetto ZIP del documento
                         with open(imaga_saved[placeholder], "rb") as new_image_file:
                             new_image_data = new_image_file.read()
-
+                        # bb = bytes_to_base64(new_image_data)
+                        # print(f"Replacing image for placeholder '{placeholder}' with base64 data of length {len(bb)}")
+                        # print(blip.embed)
                         image_part = doc.part.related_parts[blip.embed]
                         image_part._blob = new_image_data
 
@@ -507,7 +512,7 @@ def elimina_cartella(path):
         shutil.rmtree(path)
 
 
-def valuta_if_docx(doc, replacements):
+def valuta_if_docx(doc, replacements, replacements_image):
     """
     Valuta se il documento contiene blocchi di paragrafi da rimuovere o mantenere.
     Se il documento contiene blocchi di paragrafi che iniziano con {{if:placeholder:condition}}
@@ -523,7 +528,7 @@ def valuta_if_docx(doc, replacements):
         # if para.text.startswith("{{if:"):
         if "{{if:" in para.text:
             # Estrai placeholder e condizione
-            match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
+            match = re.search(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text)
             if not match:
                 i += 1
                 continue
@@ -543,11 +548,11 @@ def valuta_if_docx(doc, replacements):
             # Valuta la condizione
             soddisfatta = False
             if condizione == "*":
-                soddisfatta = ph in replacements and replacements[ph] not in [None, ""]
+                soddisfatta = (ph in replacements and replacements[ph] not in [None, ""]) or (ph in replacements_image and replacements_image[ph] not in [None, ""])
             elif condizione == "":
-                soddisfatta = ph in replacements and replacements[ph] == ""
+                soddisfatta = (ph in replacements and replacements[ph] == "") or (ph in replacements_image and replacements_image[ph] == "")
             else:
-                soddisfatta = ph in replacements and replacements[ph] == condizione
+                soddisfatta = (ph in replacements and replacements[ph] == condizione) or (ph in replacements_image and replacements_image[ph] == condizione)
 
             # Sostituisci i marker
             if soddisfatta:
@@ -560,6 +565,7 @@ def valuta_if_docx(doc, replacements):
         else:
             i += 1
 
+
 def valuta_if_blocco(blocco, replacements):
     """
     Valuta se il blocco contiene paragrafi da rimuovere o mantenere.
@@ -570,7 +576,7 @@ def valuta_if_blocco(blocco, replacements):
     while i < len(blocco):
         para = blocco[i]
         if para.text.startswith("{{if:"):
-            match = re.match(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text.strip())
+            match = re.search(r"\{\{if:([^\}:]+):([^\}]*)\}\}", para.text)
             if not match:
                 i += 1
                 continue
