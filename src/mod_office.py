@@ -18,6 +18,8 @@ import requests
 from docx.shared import Inches
 from io import BytesIO
 
+import concurrent.futures
+
 from pdf2image import convert_from_bytes
 
 
@@ -378,6 +380,52 @@ def pixel_to_emu(pixels, dpi=96):
     return int(pixels * 914400 / dpi)
 
 def replace_image_in_docx(doc, image_replacements):
+    def process_shape(shape):
+        import docx
+        from PIL import Image
+        alt_text = shape._inline.docPr.get('descr')
+        if alt_text is not None:
+            for placeholder, image_path in image_replacements.items():
+                if placeholder in alt_text:
+                    or_width, or_height = shape.width, shape.height
+                    if placeholder.startswith("{{B") or placeholder.startswith("{{DA31_"):
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
+                    else:
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
+                    dimfissa = or_width if or_width > or_height else or_height
+
+                    if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                        height = or_height
+                        width = or_width
+                    else:
+                        with Image.open(imaga_saved[placeholder]) as img:
+                            new_width, new_height = img.size
+                        new_width = pixel_to_emu(new_width)
+                        new_height = pixel_to_emu(new_height)
+                        if dimfissa == or_width:
+                            width = or_width
+                            height = int(new_height * (or_width / new_width))
+                        else:
+                            height = or_height
+                            width = int(new_width * (or_height / new_height))
+                        if width > or_width or height > or_height:
+                            if width > or_width:
+                                width = or_width
+                                height = int(new_height * (or_width / new_width))
+                            elif height > or_height:
+                                height = or_height
+                                width = int(new_width * (or_height / new_height))
+                    blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                    with open(imaga_saved[placeholder], "rb") as new_image_file:
+                        new_image_data = new_image_file.read()
+                    image_part = doc.part.related_parts[blip.embed]
+                    image_part._blob = new_image_data
+
+    # Parallelizza sulle immagini
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        list(executor.map(process_shape, doc.inline_shapes))
+
+def replace_image_in_docx1(doc, image_replacements):
     #######################
     for shape in doc.inline_shapes:
         if shape.type == docx.enum.shape.WD_INLINE_SHAPE.PICTURE or shape.type == 3:
