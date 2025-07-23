@@ -28,7 +28,7 @@ def docx_replace(doc, **kwargs: str) -> None:
             paragraph.replace_key(key, str(value))
 
 
-def docx_blocks(doc: Any, **kwargs: bool) -> None:
+def docx_blocks(doc: Any, mantieni_idx: int, rimuovi_idx: int, **kwargs: bool) -> None:
     """
     Keep or remove blocks in the word document
 
@@ -50,17 +50,46 @@ def docx_blocks(doc: Any, **kwargs: bool) -> None:
 
     More information: https://github.com/ivanbicalho/python-docx-replace
     """
-    for key, keep_block in kwargs.items():
+
+    for i in range(1, mantieni_idx + 1):
+        key = f"da_mantenere_{i}"
         initial = f"<{key}>"
         end = f"</{key}>"
 
-        result = _handle_blocks(doc, initial, end, keep_block)
+        result = _handle_blocks(doc, initial, end, True)
         while result:  # if the keys appear more than once, it will replace all
-            result = _handle_blocks(doc, initial, end, keep_block)
-
-        # end tags can exists alone in the document
-        # this function just make sure that if it's the case, raise an error
+            result = _handle_blocks(doc, initial, end, True)
+        
         _search_for_lost_end_tag(doc, initial, end)
+
+    for i in range(1, rimuovi_idx + 1):
+        key = f"da_rimuovere_{i}"
+        initial = f"<{key}>"
+        end = f"</{key}>"
+
+        # if the block is to be removed, we can just call the function with keep_block=False
+        # it will remove the entire block and everything inside it
+        # if the block is to be kept, we can just call the function with keep_block=True
+        # it will remove the initial and end tags, but keep everything inside it
+        # if the block is to be kept, we can just call the function with keep_block=True
+        # it will remove the initial and end tags, but keep everything inside it
+        result = _handle_blocks(doc, initial, end, False)
+        while result:  # if the keys appear more than once, it will replace all
+            result = _handle_blocks(doc, initial, end, False)
+
+        _search_for_lost_end_tag(doc, initial, end)
+
+    # for key, keep_block in kwargs.items():
+    #     initial = f"<{key}>"
+    #     end = f"</{key}>"
+
+    #     result = _handle_blocks(doc, initial, end, keep_block)
+    #     while result:  # if the keys appear more than once, it will replace all
+    #         result = _handle_blocks(doc, initial, end, keep_block)
+
+    #     # end tags can exists alone in the document
+    #     # this function just make sure that if it's the case, raise an error
+    #     _search_for_lost_end_tag(doc, initial, end)
 
 
 def docx_remove_table(doc: Any, index: int) -> None:

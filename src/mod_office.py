@@ -277,9 +277,9 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     docx_replace(doc, **replacements)
     duplica_blocchi_paragrafi(doc, replacements_for_each)
     # Sostituire le immagini tramite testo alternativo
-    valuta_if_docx(doc, replacements, image_replacements)
+    doc, mantieni_idx, rimuovi_idx = valuta_if_docx(doc, replacements, image_replacements)
     # elabora_blocchi_paragrafi(doc, replacements_for_each, replacements, image_replacements)
-    docx_blocks(doc, da_mantenere=True, da_rimuovere=False)  
+    docx_blocks(doc, mantieni_idx, rimuovi_idx, da_mantenere=True, da_rimuovere=False)  
     replace_image_in_docx(doc, image_replacements)
     # Per ogni replacement_for_each, recuperare i valori del campo Html
     if replacements_for_each is not None and len(replacements_for_each) > 0:
@@ -559,8 +559,88 @@ def elimina_cartella(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
-
 def valuta_if_docx(doc, replacements, replacements_image):
+    stack = []
+    blocchi = []
+
+    # Trova tutti i blocchi if annidati
+    for idx, para in enumerate(doc.paragraphs):
+        text = ''.join(run.text for run in para.runs)
+
+        for match_if in re.finditer(r"\{\{if:([^\}:]+):([^\}]*)\}\}", text):
+            placeholder, condizione = match_if.groups()
+            stack.append((placeholder, condizione, idx))
+
+        for match_fine in re.finditer(r"\{\{fine_if:([^\}:]+):([^\}]*)\}\}", text):
+            placeholder, condizione = match_fine.groups()
+            if stack and stack[-1][:2] == (placeholder, condizione):
+                start_ph, cond, start_idx = stack.pop()
+                blocchi.append((start_idx, idx, start_ph, cond))
+            else:
+                print(f"[WARNING] Errore: fine_if senza if corrispondente a riga {idx} per {placeholder} con condizione {condizione}")
+
+    if stack:
+        for ph, cond, idx in stack:
+            print(f"[WARNING] Errore: if aperto a riga {idx} senza fine_if corrispondente per {ph} con condizione {cond}")
+
+    mantieni_idx = 1
+    rimuovi_idx = 1
+    # Applica modifiche (dall'interno all'esterno)
+    for start_idx, end_idx, placeholder, condizione in reversed(blocchi):
+        ph = f"{{{{{placeholder}}}}}"
+        soddisfatta = False
+
+        if condizione == "*":
+            soddisfatta = (ph in replacements and replacements[ph] not in [None, ""]) or \
+                          (ph in replacements_image and replacements_image[ph] not in [None, ""])
+        elif condizione == "":
+            soddisfatta = (ph in replacements and replacements[ph] == "") or \
+                          (ph in replacements_image and replacements_image[ph] == "")
+        else:
+            soddisfatta = (ph in replacements and replacements[ph] == condizione) or \
+                          (ph in replacements_image and replacements_image[ph] == condizione)
+
+        if soddisfatta:
+            tag_open = f"<da_mantenere_{mantieni_idx}>"
+            tag_close = f"</da_mantenere_{mantieni_idx}>"
+            mantieni_idx += 1
+        else:
+            tag_open = f"<da_rimuovere_{rimuovi_idx}>"
+            tag_close = f"</da_rimuovere_{rimuovi_idx}>"
+            rimuovi_idx += 1
+
+        # Sostituisci solo il testo nel paragrafo (mantenendo tutto il resto)
+        _sostituisci_placeholder_in_paragrafo(doc.paragraphs[start_idx],
+                                              r"\{\{if:" + re.escape(placeholder) + ":" + re.escape(condizione) + r"\}\}",
+                                              tag_open)
+        _sostituisci_placeholder_in_paragrafo(doc.paragraphs[end_idx],
+                                              r"\{\{fine_if:" + re.escape(placeholder) + ":" + re.escape(condizione) + r"\}\}",
+                                              tag_close)
+        
+    return doc, mantieni_idx, rimuovi_idx
+
+
+def _sostituisci_placeholder_in_paragrafo(paragraph, pattern_regex, replacement):
+    """
+    Sostituisce un segnaposto nel testo completo di un paragrafo (composto dai run),
+    mantenendo gli altri contenuti e formattazioni ove possibile.
+    """
+    full_text = ''.join(run.text for run in paragraph.runs)
+    new_text, num_subs = re.subn(pattern_regex, replacement, full_text)
+
+    if num_subs == 0 and re.search(pattern_regex, full_text):
+        print(f"[ERROR] Sostituzione fallita per pattern: {pattern_regex}")
+        print(f"[ERROR] Testo paragrafo: {full_text}")
+
+    # Cancella tutti i run e sostituisci con uno nuovo
+    for run in paragraph.runs:
+        run.text = ""
+    if paragraph.runs:
+        paragraph.runs[0].text = new_text
+    else:
+        paragraph.add_run(new_text)
+
+def valuta_if_docx_in(doc, replacements, replacements_image):
     """
     Valuta se il documento contiene blocchi di paragrafi da rimuovere o mantenere.
     Se il documento contiene blocchi di paragrafi che iniziano con {{if:placeholder:condition}}
@@ -609,6 +689,57 @@ def valuta_if_docx(doc, replacements, replacements_image):
             else:
                 doc.paragraphs[i].text = "<da_rimuovere>"
                 doc.paragraphs[end_idx].text = "</da_rimuovere>"
+            i = end_idx + 1
+        else:
+            i += 1
+
+def valuta_if_docx2(doc, replacements, replacements_image):
+    """
+    Valuta se il documento contiene blocchi condizionali con {{if:...:...}} e {{fine_if:...:...}}.
+    Sostituisce con tag <da_mantenere> o <da_rimuovere> per gestirli successivamente.
+    """
+    i = 0
+    while i < len(doc.paragraphs):
+        para = doc.paragraphs[i]
+        full_text = ''.join(run.text for run in para.runs)
+
+        if "{{if:" in full_text:
+            match = re.search(r"\{\{if:([^\}:]+):([^\}]*)\}\}", full_text)
+            if not match:
+                i += 1
+                continue
+            placeholder, condizione = match.group(1), match.group(2)
+            ph = "{{" + placeholder + "}}"
+
+            # Trova l'indice del paragrafo con {{fine_if:...}}
+            end_idx = None
+            for j in range(i+1, len(doc.paragraphs)):
+                end_text = ''.join(run.text for run in doc.paragraphs[j].runs)
+                if f"{{{{fine_if:{placeholder}:{condizione}}}}}" in end_text:
+                    end_idx = j
+                    break
+
+            if end_idx is None:
+                i += 1
+                continue  # Nessuna fine trovata
+
+            # Valuta condizione
+            soddisfatta = False
+            if condizione == "*":
+                soddisfatta = (ph in replacements and replacements[ph] not in [None, ""]) or (ph in replacements_image and replacements_image[ph] not in [None, ""])
+            elif condizione == "":
+                soddisfatta = (ph in replacements and replacements[ph] == "") or (ph in replacements_image and replacements_image[ph] == "")
+            else:
+                soddisfatta = (ph in replacements and replacements[ph] == condizione) or (ph in replacements_image and replacements_image[ph] == condizione)
+
+            # Sostituzione nei paragrafi
+            if soddisfatta:
+                doc.paragraphs[i].text = "<da_mantenere>" + doc.paragraphs[i].text
+                doc.paragraphs[end_idx].text = doc.paragraphs[i].text + "</da_mantenere>"
+            else:
+                doc.paragraphs[i].text = "<da_rimuovere>" + doc.paragraphs[i].text
+                doc.paragraphs[end_idx].text = doc.paragraphs[i].text + "</da_rimuovere>"
+
             i = end_idx + 1
         else:
             i += 1
