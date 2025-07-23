@@ -291,17 +291,17 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
 
              for idx, para in enumerate(doc.paragraphs):
                  if "{{liste_controllo_go}}" in para.text:
-                     for item in replacements_for_each["{{for_go:n}}"]:
-                         if "html" in item and item["html"] is not None:
-                             url = os.getenv("BASE_URL") + item["html"]["{{liste_controllo_go}}"]
-                             response = requests.get(url)
-                             if response.status_code == 200:
-                                 pdf_bytes = response.content
-                                 insert_pdf_images_into_docx(doc, pdf_bytes, idx)
-                             else:
-                                 print(f"Errore durante il download da {url}")
-                     para.text = para.text.replace("{{liste_controllo_go}}", "")
-                     break  # Rimuovi se vuoi inserire lo stesso blocco in più punti
+                    for item in replacements_for_each["{{for_go:n}}"]:
+                        if "html" in item and item["html"] is not None:
+                            url = os.getenv("BASE_URL") + item["html"]["{{liste_controllo_go}}"]
+                            response = requests.get(url)
+                            if response.status_code == 200:
+                                pdf_bytes = response.content
+                                insert_pdf_images_into_docx(doc, pdf_bytes, idx)
+                            else:
+                                print(f"Errore durante il download da {url}")
+                    para.text = para.text.replace("{{liste_controllo_go}}", "")
+                    break  # Rimuovi se vuoi inserire lo stesso blocco in più punti
                     # i = 0
                     # for para in doc.paragraphs:
                     #     if para.text.startswith("{{liste_controllo_go}}"):
