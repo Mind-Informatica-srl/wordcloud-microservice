@@ -420,6 +420,9 @@ def replace_image_in_docx(doc, image_replacements):
                                 height = or_height
                                 width = int(new_width * (or_height / new_height))
                     blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+                    if not os.path.exists(imaga_saved[placeholder]):
+                        print(f"[ERROR] Immagine non trovata: {imaga_saved[placeholder]}")
+                        continue
                     with open(imaga_saved[placeholder], "rb") as new_image_file:
                         new_image_data = new_image_file.read()
                     image_part = doc.part.related_parts[blip.embed]
@@ -476,6 +479,10 @@ def replace_image_in_docx1(doc, image_replacements):
 
                         # Recupera il "blip" (che contiene il riferimento all'immagine nel pacchetto)
                         blip = shape._inline.graphic.graphicData.pic.blipFill.blip
+
+                        if not os.path.exists(imaga_saved[placeholder]):
+                            print(f"[ERROR] Immagine non trovata: {imaga_saved[placeholder]}")
+                            continue
 
                         with open(imaga_saved[placeholder], "rb") as new_image_file:
                             new_image_data = new_image_file.read()
