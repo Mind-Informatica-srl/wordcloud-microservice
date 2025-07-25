@@ -277,7 +277,7 @@ def replace_text_in_docx(docx_path, replacements, image_replacements, replacemen
     docx_replace(doc, **replacements)
     duplica_blocchi_paragrafi(doc, replacements_for_each)
     # Sostituire le immagini tramite testo alternativo
-    doc, mantieni_idx, rimuovi_idx = valuta_if_docx(doc, replacements, image_replacements)
+    mantieni_idx, rimuovi_idx = valuta_if_docx(doc, replacements, image_replacements)
     # elabora_blocchi_paragrafi(doc, replacements_for_each, replacements, image_replacements)
     docx_blocks(doc, mantieni_idx, rimuovi_idx, da_mantenere=True, da_rimuovere=False)  
     replace_image_in_docx(doc, image_replacements)
@@ -396,9 +396,12 @@ def replace_image_in_docx(doc, image_replacements):
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
                     else:
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
+                    
                     dimfissa = or_width if or_width > or_height else or_height
 
-                    if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}"):
+                    if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}") or \
+                    placeholder.startswith("{{DCB}}") or placeholder.startswith("{{G1}}") or placeholder.startswith("{{SLC") or \
+                    placeholder.startswith("{{DAS}}") or placeholder.startswith("{{DCS}}"):
                         height = or_height
                         width = or_width
                     else:
@@ -624,7 +627,7 @@ def valuta_if_docx(doc, replacements, replacements_image):
                                               r"\{\{fine_if:" + re.escape(placeholder) + ":" + re.escape(condizione) + r"\}\}",
                                               tag_close)
         
-    return doc, mantieni_idx, rimuovi_idx
+    return mantieni_idx, rimuovi_idx
 
 
 def _sostituisci_placeholder_in_paragrafo(paragraph, pattern_regex, replacement):
