@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: wordcloud-microservice
-        image: ghcr.io/mind-informatica-srl/wordcloud-microservice:v1.0.37
+        image: ghcr.io/mind-informatica-srl/wordcloud-microservice:v1.0.40
         ports:
         - containerPort: 8080
         env:
