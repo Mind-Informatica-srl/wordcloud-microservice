@@ -392,7 +392,11 @@ def replace_image_in_docx(doc, image_replacements):
             for placeholder, image_path in image_replacements.items():
                 if placeholder in alt_text:
                     or_width, or_height = shape.width, shape.height
-                    if placeholder.startswith("{{B") or placeholder.startswith("{{DA31_"):
+                    if placeholder in ["{{prima_pagina}}", "{{ultima_pagina}}"]:
+                        page_width_emu = int(8.27 * 914400)
+                        page_height_emu = int(11.69 * 914400)
+                        imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=page_width_emu, height=page_height_emu)
+                    elif placeholder.startswith("{{B") or placeholder.startswith("{{DA31_"):
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=or_width, height=or_height)
                     else:
                         imaga_saved = save_image(placeholder, image_path, "storage/immagini", width=0, height=0)
@@ -401,7 +405,7 @@ def replace_image_in_docx(doc, image_replacements):
 
                     if placeholder.startswith("{{C5}}") or placeholder.startswith("{{C6}}") or placeholder.startswith("{{C7}}") or \
                     placeholder.startswith("{{DCB}}") or placeholder.startswith("{{G1}}") or placeholder.startswith("{{SLC") or \
-                    placeholder.startswith("{{DAS}}") or placeholder.startswith("{{DCS}}"):
+                    placeholder.startswith("{{DAS}}") or placeholder.startswith("{{DCS}}") or placeholder == "{{prima_pagina}}" or placeholder == "{{ultima_pagina}}":
                         height = or_height
                         width = or_width
                     else:
