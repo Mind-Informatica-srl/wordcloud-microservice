@@ -2,7 +2,6 @@ import os
 
 import requests
 
-
 def save_image(key, url, image_path, width, height):
     """
     in image ho una mappa stringa stringa
@@ -26,7 +25,7 @@ def save_image(key, url, image_path, width, height):
     print(f"Sto per chiamare '{url}'")
     
 
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code == 200:
         image_bytes = response.content
             # Salvare l'immagine

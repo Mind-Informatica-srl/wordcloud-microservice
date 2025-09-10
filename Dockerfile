@@ -1,11 +1,11 @@
-FROM python:3.13.1-slim-bookworm
+FROM python:3.14-rc-slim-bookworm
 
 # Set the working directory
 WORKDIR /app
 
 # Install gcc, Poppler (for pdf2image), and basic fonts
 RUN apt-get update && \
-    apt-get install -y gcc poppler-utils && \
+    apt-get install -y gcc poppler-utils ca-certificates && \
     apt-get upgrade -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -14,6 +14,9 @@ COPY requirements.txt .
 
 # Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Upgrade pip, setuptools, and wheel
+RUN pip install --upgrade pip setuptools wheel
 
 # Copy the fonts directory
 COPY fonts /app/fonts
