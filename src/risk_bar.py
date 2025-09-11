@@ -128,10 +128,11 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             fontsize=font_size,
         )      
         for text, color in zip(group_legend.get_texts(), legend_colors):
-            if color != "" and color != None:
-                text.set_color(color)
-            else:
-                text.set_color("black")
+            # if color != "" and color != None:
+            #     text.set_color(color)
+            # else:
+            #     text.set_color("black")
+            text.set_color("black")
         ax.add_artist(group_legend)
 
         # Rimuovi il bordo nero intorno all'area del grafico

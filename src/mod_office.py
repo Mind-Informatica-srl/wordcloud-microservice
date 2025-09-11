@@ -994,7 +994,7 @@ def process_file(file_path, replacements, image_replacements, replacements_for_e
                 replacer = TextReplacer(changed_presentation, slides=slidenstr, tables=True, charts=True, textframes=True)
                 if reps is None or ind >= len(reps) or len(reps) == 0:
                     if for_type == "{{for_go:n}}":
-                        reps = [{"testuali": {"{{gruppo_omogeneo_testuale_nome}}": "", "{{go_partecipanti}}": "", "{{go_adesione}}": "", "{{gruppo_omogeneo_rischio}}": ""}}]
+                        reps = [{"testuali": {"{{gruppo_omogeneo_testuale_nome}}": "", "{{go_partecipanti}}": "", "{{go_completati}}": "", "{{go_adesione}}": "", "{{gruppo_omogeneo_rischio}}": ""}}]
                     elif for_type == "{{for_fg:n}}":
                         reps = [{"testuali": {"{{nome_fg}}": "", }}]
                     else:

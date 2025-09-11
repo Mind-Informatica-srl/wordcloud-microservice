@@ -89,7 +89,18 @@ def generate_list(items, format, width, height):
     # Imposta dimensioni fisse
     if width is None or height is None or width == 0.0 or height == 0.0:
         width, height = 800, 400  # Altezza fissa
-    max_items_per_column = 8  # Massimo 10 elementi per colonna
+        # Impostazioni dinamiche in base al numero di items
+    num_items = len(items) if items else 0
+    if num_items > 16:
+        max_items_per_column = math.ceil(num_items / 2)
+        font_size = 12
+        line_spacing = 12
+        y_step = 3
+    else:
+        max_items_per_column = 8
+        font_size = 16
+        line_spacing = 15
+        y_step = 5
     
     # Se la lista è vuota, restituisci un'immagine vuota
     if not items or len(items) == 0:
@@ -120,13 +131,13 @@ def generate_list(items, format, width, height):
     # Percorso del font
     font_path = "fonts/Figtree-VariableFont_wght.ttf"
     try:
-        font = ImageFont.truetype(font_path, 16)  # Ridotto font per ottimizzare lo spazio
+        font = ImageFont.truetype(font_path, font_size)  # Ridotto font per ottimizzare lo spazio
     except IOError:
         font = ImageFont.load_default()
     
     y_start = 5  # Margine superiore
-    y_step = 5  # Spaziatura verticale ridotta
-    line_spacing = 15  # Spaziatura ridotta tra le righe
+    # y_step = 5  # Spaziatura verticale ridotta
+    # line_spacing = 15  # Spaziatura ridotta tra le righe
     
     # Disegna la prima colonna
     y = y_start

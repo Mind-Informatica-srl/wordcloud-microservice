@@ -1,5 +1,6 @@
 import copy
 import io
+import os
 import re
 from PIL import Image
 
@@ -195,6 +196,12 @@ def duplicate_and_replace_slide(ppt, replacements_dict, num_fg, num_go):
                                                     height = or_height
                                                     width = int(new_width * (or_height / new_height))
                                         new_slide.shapes.add_picture(img_saved[placeholder], left, top,  width, height)
+                                        sp = shape
+                                        new_slide.shapes._spTree.remove(sp._element)
+                            else:
+                                for placeholder, image_path in element["immagini"].items():
+                                    if (placeholder in shape.image.filename) or (alt_text is not None and placeholder in placeholder_slide):
+                                        # rimuovo l'immagine
                                         sp = shape
                                         new_slide.shapes._spTree.remove(sp._element)
 
