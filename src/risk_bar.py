@@ -36,6 +36,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         height = height / EMU
 
     font_size = calcola_font_size(width, height)
+    font_size_label = font_size - 4
     
     if not categories or not values or not groups or not risk_zones or not risk_colors or not legend_labels or not bar_colors or len(values) == 0 or all(value == 0 for value in values): 
         if format.lower() == 'svg':
@@ -65,6 +66,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
         num_categories = len(categories)
         bar_height = 0.30 # / len(groups)
         bar_spacing = 0.10
+        costant = 0.2
         fig, ax = plt.subplots(figsize=(width, height)) 
 
         # Aggiungi le fasce di rischio come sfondo
@@ -74,7 +76,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             risk_patches.append(patch)
 
         # Definizione delle posizioni per le barre
-        y_positions = np.arange(num_categories) * (len(groups) * (bar_height + bar_spacing) + 0.2)
+        y_positions = np.arange(num_categories) * (len(groups) * (bar_height + bar_spacing) + costant)
 
         bar_col = []
         for i in range(len(groups)):
@@ -97,7 +99,7 @@ def create_risk_bar_chart(categories, values, groups, risk_zones, risk_colors, l
             # Aggiungi i valori all'estremo destro delle barre
             for j, val in enumerate(values):
                 if val[i] != 0 and val[i] != None and val[i] != 0.00:
-                    ax.text(val[i], y_positions[j] + i * (bar_height + bar_spacing), f'{val[i]:.2f}', va='center', ha='left', fontsize=font_size, color='black', fontweight='bold', fontproperties=avenir_font_path)
+                    ax.text(val[i], y_positions[j] + i * (bar_height + bar_spacing), f'{val[i]:.2f}', va='center', ha='left', fontsize=font_size_label, color='black', fontweight='bold', fontproperties=avenir_font_path)
 
 
         # Configura assi e legenda
